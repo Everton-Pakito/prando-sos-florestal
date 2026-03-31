@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#0d1526">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ADM Prando">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<title>ADM – Painel de OS · Prando</title>
+<style>
+:root{
+  --red:#e63946;--red-glow:rgba(230,57,70,.3);
+  --bg:#060b18;--bg2:#0d1526;--bg3:#111d35;
+  --surface:#131f38;--surface2:#1a2848;
+  --border:rgba(230,57,70,.18);--border-act:rgba(230,57,70,.6);
+  --text:#eef2ff;--muted:#7a8aaa;
+  --gold:#f4b942;--green:#4ade80;--blue:#3b82f6;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text)}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:1000;
+  display:flex;align-items:center;justify-content:center;padding:24px}
+.lb{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:32px 24px;text-align:center}
+.lb-logo{width:64px;height:64px;background:var(--red);border-radius:16px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
+  font-family:'Bebas Neue',sans-serif;font-size:26px;color:#fff;
+  box-shadow:0 0 24px var(--red-glow)}
+.lb-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;margin-bottom:4px}
+.lb-sub{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
+.lb-field{text-align:left;margin-bottom:16px}
+.lb-field label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px;font-weight:600}
+.lb-field input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'Barlow',sans-serif;font-size:16px;padding:12px 14px;outline:none;
+  transition:border-color .2s,box-shadow .2s}
+.lb-field input:focus{border-color:var(--border-act);box-shadow:0 0 0 3px var(--red-glow)}
+#btn-login{width:100%;background:var(--red);border:none;border-radius:12px;color:#fff;
+  padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;
+  cursor:pointer;margin-top:8px;transition:opacity .2s}
+#btn-login:active{opacity:.8}
+.lb-err{color:var(--red);font-size:13px;margin-top:10px;min-height:18px}
+
+/* ── APP ── */
+#app{display:none;flex-direction:column;min-height:100dvh}
+#app.on{display:flex}
+
+/* ── HEADER ── */
+header{background:var(--bg2);border-bottom:2px solid var(--red);flex-shrink:0}
+.hi{padding:14px 16px;display:flex;align-items:center;gap:12px}
+.hlogo{width:44px;height:44px;background:var(--red);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;
+  box-shadow:0 0 16px var(--red-glow)}
+.htx{flex:1}
+.htx h1{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;line-height:1}
+.htx p{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+#btn-out{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);
+  font-size:12px;padding:6px 12px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;
+  letter-spacing:1px;text-transform:uppercase;transition:all .2s}
+#btn-out:active{border-color:var(--red);color:var(--red)}
+
+/* ── STATS ── */
+.stats{display:flex;gap:8px;padding:12px 12px 0;overflow-x:auto;scrollbar-width:none}
+.stats::-webkit-scrollbar{display:none}
+.sc{flex-shrink:0;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:10px 16px;text-align:center;min-width:80px}
+.sc-n{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1}
+.sc-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.sc.ab .sc-n{color:#f59e0b}
+.sc.en .sc-n{color:var(--green)}
+.sc.to .sc-n{color:var(--blue)}
+.sc.tm .sc-n{color:var(--gold)}
+
+/* ── FILTERS ── */
+.filters{padding:10px 12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fb{padding:7px 14px;background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.fb.on{background:var(--red);border-color:var(--red);color:#fff}
+.srch{flex:1;min-width:140px}
+.srch input{width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;
+  padding:7px 14px;outline:none;transition:border-color .2s}
+.srch input:focus{border-color:var(--border-act)}
+.srch input::placeholder{color:var(--muted)}
+
+/* ── TOOLBAR ── */
+.tb{padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tb-info{font-size:11px;color:var(--muted);letter-spacing:1px;flex:1}
+#btn-ref{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);padding:7px 14px;cursor:pointer;font-size:13px;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;transition:all .2s;flex-shrink:0}
+#btn-ref:active{border-color:var(--red);color:var(--red)}
+.spin{display:inline-block;animation:spin .7s linear infinite}
+
+/* ── MAIN LIST ── */
+main{flex:1;padding:8px 12px 24px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-ico{font-size:48px;margin-bottom:12px}
+.empty-tit{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--muted)}
+
+/* ── OS CARD ── */
+.osc{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.osc.ab{border-left:4px solid #f59e0b}
+.osc.en{border-left:4px solid var(--green);opacity:.85}
+.osc-head{padding:12px 14px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;
+  transition:background .15s;user-select:none}
+.osc-head:active{background:var(--bg3)}
+.osc-ico{flex-shrink:0;width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px}
+.osc-ico.sc{background:rgba(230,57,70,.12)}
+.osc-ico.of{background:rgba(59,130,246,.12)}
+.osc-inf{flex:1;min-width:0}
+.osc-id{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted)}
+.osc-mot{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.osc-sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+.osc-right{flex-shrink:0;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.badge{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
+  padding:4px 10px;border-radius:20px;text-transform:uppercase;font-weight:700}
+.badge.ab{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}
+.badge.en{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.osc-time{font-size:11px;color:var(--muted)}
+.osc-chev{font-size:14px;color:var(--muted);transition:transform .2s}
+.osc-chev.open{transform:rotate(180deg)}
+
+/* ── OS BODY ── */
+.osc-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border);animation:fadeIn .2s ease}
+.osc-body.open{display:block}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.dc{background:var(--bg2);border-radius:8px;padding:8px 10px}
+.dc-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.dc-v{font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:1px}
+.dc.full{grid-column:1/-1}
+.osc-desc{background:var(--bg2);border-radius:8px;padding:10px;margin-top:8px;
+  font-size:13px;line-height:1.5}
+.osc-loc{background:var(--bg3);border-radius:8px;padding:10px;margin-top:8px;
+  font-size:12px;line-height:1.6;color:var(--muted);word-break:break-word}
+.osc-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn-enc{flex:1;background:var(--green);border:none;border-radius:10px;color:var(--bg);
+  padding:12px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;
+  cursor:pointer;transition:opacity .2s;min-width:120px}
+.btn-enc:active{opacity:.7}
+.btn-wa-adm{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  color:var(--green);padding:12px 16px;cursor:pointer;font-size:20px;transition:all .2s;flex-shrink:0}
+.btn-wa-adm:active{background:rgba(37,211,102,.1)}
+
+/* ── MODAL ── */
+#modal{display:none;position:fixed;inset:0;background:rgba(6,11,24,.85);
+  z-index:500;align-items:center;justify-content:center;padding:20px}
+#modal.show{display:flex}
+.mb{width:100%;max-width:400px;background:var(--surface2);border:1px solid var(--border-act);
+  border-radius:18px;padding:24px}
+.mb-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--green);margin-bottom:4px}
+.mb-sub{font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:20px}
+.mb-field label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px;font-weight:600}
+.mb-field textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:10px;outline:none;
+  resize:vertical;min-height:80px;transition:border-color .2s}
+.mb-field textarea:focus{border-color:var(--border-act)}
+.mb-btns{display:flex;gap:10px;margin-top:16px}
+#btn-ok-enc{flex:1;background:var(--green);border:none;border-radius:10px;color:var(--bg);
+  padding:13px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer}
+#btn-ok-enc:active{opacity:.8}
+#btn-cx-enc{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  color:var(--muted);padding:13px 18px;font-family:'Bebas Neue',sans-serif;
+  font-size:18px;letter-spacing:2px;cursor:pointer}
+
+/* ── TOAST ── */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);
+  background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:12px 20px;font-size:13px;color:var(--text);z-index:9999;
+  transition:transform .3s;white-space:normal;text-align:center;max-width:88vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:var(--green);color:var(--green)}
+#toast.er{border-color:var(--red);color:var(--red)}
+#toast.in{border-color:var(--gold);color:var(--gold)}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  EDITE APENAS ESTAS DUAS LINHAS     ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<script>
+const GAS_URL   = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+const ADM_SENHA = 'prando2025'; // ← MUDE PARA SUA SENHA
+</script>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lb">
+    <div class="lb-logo">ADM</div>
+    <div class="lb-title">Painel ADM</div>
+    <div class="lb-sub">Prando Transportes</div>
+    <div class="lb-field">
+      <label>Senha</label>
+      <input type="password" id="pwd" placeholder="Digite a senha"
+        onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button id="btn-login" onclick="login()">ENTRAR</button>
+    <div class="lb-err" id="lb-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="hi">
+      <div class="hlogo">ADM</div>
+      <div class="htx">
+        <h1>Painel de OS</h1>
+        <p>Prando Transportes · Florestal</p>
+      </div>
+      <button id="btn-out" onclick="logout()">SAIR</button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="sc to"><div class="sc-n" id="st-tot">–</div><div class="sc-l">Total</div></div>
+    <div class="sc ab"><div class="sc-n" id="st-ab">–</div><div class="sc-l">Abertas</div></div>
+    <div class="sc en"><div class="sc-n" id="st-en">–</div><div class="sc-l">Encerradas</div></div>
+    <div class="sc tm"><div class="sc-n" id="st-tm">–</div><div class="sc-l">Média (min)</div></div>
+  </div>
+
+  <div class="filters">
+    <button class="fb on" onclick="setF('todos',this)">Todos</button>
+    <button class="fb"    onclick="setF('ABERTA',this)">Abertas</button>
+    <button class="fb"    onclick="setF('ENCERRADA',this)">Encerradas</button>
+    <button class="fb"    onclick="setF('Socorro',this)">Socorro</button>
+    <button class="fb"    onclick="setF('Oficina',this)">Oficina</button>
+    <div class="srch">
+      <input type="text" id="srch" placeholder="🔍 Motorista, frota, placa, ID..." oninput="render()">
+    </div>
+  </div>
+
+  <div class="tb">
+    <div class="tb-info" id="tb-info">–</div>
+    <button id="btn-ref" onclick="load()">↻ Atualizar</button>
+  </div>
+
+  <main id="list">
+    <div class="empty"><div class="empty-ico">📋</div><div class="empty-tit">Carregando...</div></div>
+  </main>
+</div>
+
+<!-- MODAL ENCERRAR -->
+<div id="modal">
+  <div class="mb">
+    <div class="mb-title">✅ Encerrar OS</div>
+    <div class="mb-sub" id="m-sub">–</div>
+    <div class="mb-field">
+      <label>Observação (opcional)</label>
+      <textarea id="obs-enc" placeholder="Ex: Problema resolvido. Caminhão liberado."></textarea>
+    </div>
+    <div class="mb-btns">
+      <button id="btn-cx-enc" onclick="closeModal()">CANCELAR</button>
+      <button id="btn-ok-enc" onclick="confirmar()">ENCERRAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════
+const $=id=>document.getElementById(id);
+function toast(msg,tipo=''){
+  const t=$('toast'); t.textContent=msg;
+  t.className='show '+(tipo==='ok'?'ok':tipo==='er'?'er':'in');
+  setTimeout(()=>t.className='',3500);
+}
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+function fmtT(min){
+  if(!min||isNaN(min)||min<=0) return '–';
+  if(min<60) return `${min}min`;
+  const h=Math.floor(min/60),m=min%60;
+  return m?`${h}h ${m}min`:`${h}h`;
+}
+
+// ════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════
+function login(){
+  const v=$('pwd').value;
+  if(v===ADM_SENHA){
+    sessionStorage.setItem('adm','1');
+    $('login-screen').style.display='none';
+    $('app').classList.add('on');
+    load();
+  }else{
+    $('lb-err').textContent='✗ Senha incorreta';
+    $('pwd').value=''; $('pwd').focus();
+  }
+}
+function logout(){
+  sessionStorage.removeItem('adm');
+  location.reload();
+}
+if(sessionStorage.getItem('adm')==='1'){
+  $('login-screen').style.display='none';
+  $('app').classList.add('on');
+}
+
+// ════════════════════════════════════
+//  STATE
+// ════════════════════════════════════
+let DATA=[], filtro='todos', enc_id=null;
+
+// ════════════════════════════════════
+//  CARREGAR
+// ════════════════════════════════════
+async function load(){
+  const btn=$('btn-ref');
+  btn.innerHTML='<span class="spin">↻</span> Atualizando';
+  btn.disabled=true;
+  try{
+    const r=await fetch(`${GAS_URL}?action=listar&_=${Date.now()}`);
+    const d=await r.json();
+    if(d.ok){ DATA=d.dados||[]; stats(); render(); }
+    else toast('⚠ Erro: '+(d.erro||''),'er');
+  }catch{ toast('⚠ Falha de conexão','er'); }
+  btn.innerHTML='↻ Atualizar'; btn.disabled=false;
+}
+
+// ════════════════════════════════════
+//  STATS
+// ════════════════════════════════════
+function stats(){
+  const ab=DATA.filter(o=>o['Status OS']==='ABERTA');
+  const en=DATA.filter(o=>o['Status OS']==='ENCERRADA');
+  const ts=en.map(o=>Number(o['Tempo Manutencao (min)'])).filter(n=>n>0);
+  const md=ts.length?Math.round(ts.reduce((a,b)=>a+b,0)/ts.length):0;
+  $('st-tot').textContent=DATA.length;
+  $('st-ab').textContent=ab.length;
+  $('st-en').textContent=en.length;
+  $('st-tm').textContent=md||'–';
+}
+
+// ════════════════════════════════════
+//  FILTRO
+// ════════════════════════════════════
+function setF(f,btn){
+  filtro=f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+function filtrar(){
+  const q=($('srch')?.value||'').toLowerCase();
+  return DATA.filter(os=>{
+    const mf = filtro==='todos' ? true
+      : filtro==='ABERTA'||filtro==='ENCERRADA' ? os['Status OS']===filtro
+      : os['Tipo OS']===filtro;
+    const mq = !q||['Motorista','Frota','Placa CM','ID','Placas SRS','Descricao','Local']
+      .some(k=>String(os[k]||'').toLowerCase().includes(q));
+    return mf&&mq;
+  });
+}
+
+// ════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════
+function render(){
+  const lista=filtrar();
+  const now=new Date().toLocaleTimeString('pt-BR');
+  $('tb-info').textContent=`${lista.length} de ${DATA.length} OS · ${now}`;
+  if(!lista.length){
+    $('list').innerHTML=`<div class="empty">
+      <div class="empty-ico">📋</div>
+      <div class="empty-tit">Nenhuma OS encontrada</div>
+    </div>`;
+    return;
+  }
+  $('list').innerHTML=lista.map(card).join('');
+}
+
+function card(os){
+  const ab  = os['Status OS']==='ABERTA';
+  const tipo= os['Tipo OS']||'Socorro';
+  const ico = tipo==='Oficina'?'🔧':'🚨';
+  const ts  = Number(os['Timestamp Abertura'])||0;
+  const mins= ab&&ts ? Math.round((Date.now()-ts)/60000) : Number(os['Tempo Manutencao (min)'])||0;
+  const tmLbl = ab&&ts ? `⏱ ${fmtT(mins)} aberta` : (!ab&&mins ? `⏱ ${fmtT(mins)}` : '');
+  const srsLn = os['Placas SRS'] ? `<br><span style="color:var(--gold);font-size:11px">${esc(os['Placas SRS'])}</span>` : '';
+  const carLn = os['Status Carga'] ? ` · ${os['Status Carga']}` : '';
+  const id    = os['ID']||'–';
+
+  return `
+<div class="osc ${ab?'ab':'en'}" id="oc-${id}">
+  <div class="osc-head" onclick="toggle('${id}')">
+    <div class="osc-ico ${tipo==='Oficina'?'of':'sc'}">${ico}</div>
+    <div class="osc-inf">
+      <div class="osc-id">${esc(id)} · ${esc(os['Data Abertura']||'')} ${esc(os['Hora Abertura']||'')}</div>
+      <div class="osc-mot">${esc(os['Motorista']||'–')}</div>
+      <div class="osc-sub">Frota ${esc(os['Frota']||'–')} · ${esc(os['Placa CM']||'–')} · ${esc(tipo)}${esc(carLn)}${srsLn}</div>
+    </div>
+    <div class="osc-right">
+      <span class="badge ${ab?'ab':'en'}">${ab?'ABERTA':'FECHADA'}</span>
+      ${tmLbl?`<span class="osc-time">${tmLbl}</span>`:''}
+      <span class="osc-chev" id="chev-${id}">▾</span>
+    </div>
+  </div>
+  <div class="osc-body" id="ob-${id}">
+    <div class="dg">
+      <div class="dc"><div class="dc-l">Tipo Veículo</div><div class="dc-v">${esc(os['Tipo Veiculo']||'–')}</div></div>
+      <div class="dc"><div class="dc-l">Tipo OS</div><div class="dc-v">${esc(tipo)}</div></div>
+      <div class="dc"><div class="dc-l">Frota</div><div class="dc-v">${esc(os['Frota']||'–')}</div></div>
+      <div class="dc"><div class="dc-l">Placa CM</div><div class="dc-v">${esc(os['Placa CM']||'–')}</div></div>
+      ${os['Placas SRS']?`<div class="dc full"><div class="dc-l">Placas SRS</div><div class="dc-v">${esc(os['Placas SRS'])}</div></div>`:''}
+      ${os['Status Carga']?`<div class="dc"><div class="dc-l">Status Carga</div><div class="dc-v">${esc(os['Status Carga'])}</div></div>`:''}
+      ${!ab?`
+      <div class="dc"><div class="dc-l">Fechamento</div><div class="dc-v">${esc(os['Data Fechamento']||'–')} ${esc(os['Hora Fechamento']||'')}</div></div>
+      <div class="dc"><div class="dc-l">Duração</div><div class="dc-v">${fmtT(Number(os['Tempo Manutencao (min)']))}</div></div>
+      ${os['Observacao Fechamento']?`<div class="dc full"><div class="dc-l">Obs. Fechamento</div><div class="dc-v">${esc(os['Observacao Fechamento'])}</div></div>`:''}
+      `:''}
+    </div>
+    <div class="osc-desc">${esc(os['Descricao']||'–')}</div>
+    <div class="osc-loc">📍 ${esc(os['Local']||'–')}</div>
+    <div class="osc-acts">
+      ${ab?`<button class="btn-enc" onclick="openModal('${id}')">✅ ENCERRAR OS</button>`:''}
+      <button class="btn-wa-adm" onclick="waAdm('${id}')" title="Enviar WhatsApp">📲</button>
+    </div>
+  </div>
+</div>`;
+}
+
+function toggle(id){
+  const b=$(`ob-${id}`), c=$(`chev-${id}`);
+  b?.classList.toggle('open');
+  c?.classList.toggle('open');
+}
+
+// ════════════════════════════════════
+//  MODAL ENCERRAR
+// ════════════════════════════════════
+function openModal(id){
+  enc_id=id; $('m-sub').textContent=id;
+  $('obs-enc').value=''; $('modal').classList.add('show');
+  setTimeout(()=>$('obs-enc').focus(),200);
+}
+function closeModal(){ $('modal').classList.remove('show'); enc_id=null; }
+
+async function confirmar(){
+  if(!enc_id) return;
+  const obs=$('obs-enc').value.trim();
+  const btn=$('btn-ok-enc');
+  btn.textContent='...'; btn.disabled=true;
+  try{
+    const url=`${GAS_URL}?action=encerrar&id=${encodeURIComponent(enc_id)}&obs=${encodeURIComponent(obs)}&_=${Date.now()}`;
+    const r=await fetch(url);
+    const d=await r.json();
+    if(d.ok){
+      toast(`✓ OS encerrada! Duração: ${fmtT(d.minutos)}`,'ok');
+      closeModal();
+      await load();
+    }else toast('⚠ '+(d.erro||'Erro'),'er');
+  }catch{ toast('⚠ Falha de conexão','er'); }
+  btn.textContent='ENCERRAR'; btn.disabled=false;
+}
+
+// Fecha modal clicando fora
+$('modal').addEventListener('click',e=>{ if(e.target===$('modal')) closeModal(); });
+
+// ════════════════════════════════════
+//  WA DO PAINEL
+// ════════════════════════════════════
+function waAdm(id){
+  const os=DATA.find(o=>o['ID']===id); if(!os) return;
+  const ab=os['Status OS']==='ABERTA';
+  let m=`${ab?'🚨':'✅'} *OS ${ab?'ABERTA':'ENCERRADA'}*\n_Prando Transportes_\n`;
+  m+=`━━━━━━━━━━━━━━━━━━━━\n`;
+  m+=`▸ ID: *${os['ID']}*\n▸ Tipo: *${os['Tipo OS']}*\n`;
+  m+=`▸ Motorista: *${os['Motorista']}*\n`;
+  m+=`▸ Frota: *${os['Frota']}* · Placa: *${os['Placa CM']}*\n`;
+  if(os['Placas SRS']) m+=`▸ SRS: ${os['Placas SRS']}\n`;
+  m+=`▸ Abertura: ${os['Data Abertura']} às ${os['Hora Abertura']}\n`;
+  m+=`▸ Descrição:\n_${os['Descricao']}_\n▸ Local:\n${os['Local']}\n`;
+  if(!ab){
+    m+=`\n✅ *Encerrada:* ${os['Data Fechamento']} às ${os['Hora Fechamento']}\n`;
+    m+=`⏱ *Duração:* ${fmtT(Number(os['Tempo Manutencao (min)']))}\n`;
+    if(os['Observacao Fechamento']) m+=`📝 _${os['Observacao Fechamento']}_\n`;
+  }
+  m+=`\n━━━━━━━━━━━━━━━━━━━━\n_Prando Transportes – Florestal_`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(m)}`,'_blank');
+}
+
+// ════════════════════════════════════
+//  AUTO-REFRESH (60s)
+// ════════════════════════════════════
+setInterval(()=>{ if(sessionStorage.getItem('adm')==='1') load(); },60000);
+if(sessionStorage.getItem('adm')==='1') load();
+</script>
+</body>
+</html>

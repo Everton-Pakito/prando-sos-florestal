@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#e63946">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="SOS Prando">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SOS Prando">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<meta name="description" content="Formulário de Ordem de Serviço – Prando Transportes Florestal">
+<meta name="msapplication-TileColor" content="#e63946">
+<meta name="msapplication-TileImage" content="/icons/icon-144.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<title>SOS – JC Prando Transportes</title>
+<style>
+:root{
+  --red:#e63946;--red-dark:#b71c28;--red-glow:rgba(230,57,70,.35);
+  --bg:#060b18;--bg2:#0d1526;--bg3:#111d35;
+  --surface:#131f38;--surface2:#1a2848;
+  --border:rgba(230,57,70,.2);--border-act:rgba(230,57,70,.7);
+  --text:#eef2ff;--muted:#7a8aaa;
+  --gold:#f4b942;--green:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none}
+body{display:flex;flex-direction:column;min-height:100dvh}
+
+/* ── INSTALL BANNER ── */
+#install-banner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:900;
+  background:linear-gradient(135deg,var(--surface2),var(--bg3));
+  border-top:2px solid var(--red);padding:14px 16px;align-items:center;gap:12px}
+#install-banner.show{display:flex}
+#install-banner img{width:40px;height:40px;border-radius:8px;flex-shrink:0}
+#install-banner .ib-txt{flex:1}
+#install-banner .ib-txt strong{display:block;font-size:13px;color:var(--text)}
+#install-banner .ib-txt span{font-size:11px;color:var(--muted)}
+#btn-install{background:var(--red);color:#fff;border:none;padding:9px 16px;border-radius:8px;
+  font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;flex-shrink:0}
+#btn-dismiss{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
+
+/* ── HEADER ── */
+header{background:var(--bg2);border-bottom:2px solid var(--red);position:relative;overflow:hidden;flex-shrink:0}
+.hstripe{position:absolute;top:0;left:0;right:0;height:3px;
+  background:repeating-linear-gradient(90deg,var(--red) 0,var(--red) 20px,transparent 20px,transparent 30px)}
+.hinner{padding:14px 16px 12px;display:flex;align-items:center;gap:14px}
+.hlogo{width:52px;height:52px;background:var(--red);border-radius:12px;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 20px var(--red-glow);position:relative;overflow:hidden}
+.hlogo::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:linear-gradient(135deg,rgba(255,255,255,.15) 0,transparent 50%)}
+.hlogo span{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:1px;position:relative;z-index:1}
+.htitles{flex:1}
+.htitles h2{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--red);
+  letter-spacing:4px;text-transform:uppercase;font-weight:600}
+.htitles h1{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;line-height:1.1}
+.htitles .etag{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.hdot-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0}
+#online-dot{width:10px;height:10px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 6px var(--green);transition:background .3s,box-shadow .3s}
+.hdot-wrap span{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+
+/* ── MAIN ── */
+main{flex:1;padding:12px 12px 80px;display:flex;flex-direction:column;gap:12px;width:100%}
+
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:16px;position:relative;overflow:hidden;width:100%;
+  animation:fadeIn .3s ease}
+.card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;
+  background:var(--red);border-radius:4px 0 0 4px}
+.ctitle{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--red);margin-bottom:14px;margin-left:4px;
+  display:flex;align-items:center;gap:6px}
+.ctitle::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── TIPO SELECTOR ── */
+.tipo-wrap{display:flex;gap:10px}
+.tipo-btn{flex:1;padding:16px 6px;background:var(--bg2);border:2px solid var(--border);
+  border-radius:14px;color:var(--muted);cursor:pointer;transition:all .25s;
+  display:flex;flex-direction:column;align-items:center;gap:6px}
+.tipo-btn .ticon{font-size:26px;line-height:1}
+.tipo-btn .tlabel{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px}
+.tipo-btn .tsub{font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  font-family:'Barlow Condensed',sans-serif;color:var(--muted)}
+.tipo-btn.sel-gold{background:rgba(244,185,66,.1);border-color:var(--gold);
+  color:var(--text);box-shadow:0 0 16px rgba(244,185,66,.2)}
+.tipo-btn.sel-gold .tsub{color:var(--gold)}
+.tipo-btn.sel-red{background:rgba(230,57,70,.1);border-color:var(--red);
+  color:var(--text);box-shadow:0 0 16px var(--red-glow)}
+.tipo-btn.sel-red .tsub{color:var(--red)}
+.tipo-btn.sel-blue{background:rgba(59,130,246,.1);border-color:#3b82f6;
+  color:var(--text);box-shadow:0 0 16px rgba(59,130,246,.2)}
+.tipo-btn.sel-blue .tsub{color:#3b82f6}
+
+/* ── FIELDS ── */
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px;font-weight:600}
+input[type=text],input[type=number],textarea{
+  width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;padding:11px 14px;
+  outline:none;transition:border-color .2s,box-shadow .2s,background .2s;
+  -webkit-appearance:none;appearance:none}
+input:focus,textarea:focus{border-color:var(--border-act);box-shadow:0 0 0 3px var(--red-glow);background:var(--bg3)}
+input::placeholder,textarea::placeholder{color:var(--muted);font-size:14px}
+textarea{resize:vertical;min-height:90px;line-height:1.5}
+
+/* ── FROTA ── */
+.frota-input-wrap{position:relative}
+#frota-input{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:6px;text-align:center;padding:10px 14px}
+#frota-input::-webkit-inner-spin-button,#frota-input::-webkit-outer-spin-button{-webkit-appearance:none}
+#frota-input.fi-ok{border-color:rgba(74,222,128,.5)}
+#frota-input.fi-err{border-color:rgba(230,57,70,.6)}
+.frota-sugs{position:absolute;left:0;right:0;top:calc(100% + 4px);
+  background:var(--surface2);border:1px solid var(--border-act);
+  border-radius:10px;z-index:60;display:none;max-height:220px;overflow-y:auto;
+  box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.frota-sugs.open{display:block}
+.fsug{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;border-bottom:1px solid var(--border);transition:background .15s}
+.fsug:last-child{border-bottom:none}
+.fsug:active,.fsug:hover{background:var(--bg3)}
+.fsug-num{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text)}
+.fsug-placa{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:3px;color:var(--gold)}
+.frota-fb{margin-top:5px;font-size:12px;letter-spacing:1px;min-height:16px;padding-left:2px;transition:color .2s}
+.frota-fb.ok{color:var(--green)}
+.frota-fb.err{color:var(--red)}
+.frota-fb.hint{color:var(--muted)}
+
+/* ── PLACA AUTO ── */
+.placa-auto{display:flex;align-items:center;gap:10px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:10px;padding:11px 14px;transition:all .3s}
+.placa-auto.filled{border-color:rgba(244,185,66,.45);background:rgba(244,185,66,.05)}
+.placa-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;
+  letter-spacing:4px;color:var(--gold);flex:1;text-align:center;transition:color .3s}
+.placa-val.empty{color:var(--muted);font-size:14px;letter-spacing:1px;font-weight:400;font-family:'Barlow',sans-serif}
+.placa-tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+  background:var(--surface2);padding:3px 8px;border-radius:5px;flex-shrink:0}
+
+/* ── PLACA MANUAL ── */
+.placa-input{text-transform:uppercase;letter-spacing:3px;
+  font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-align:center}
+
+/* ── SRS ── */
+.srs-checks{display:flex;gap:8px}
+.srs-chk-btn{flex:1;padding:13px 6px;background:var(--bg2);border:2px solid var(--border);
+  border-radius:10px;color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:18px;
+  cursor:pointer;transition:all .2s;text-align:center;display:flex;align-items:center;
+  justify-content:center;user-select:none;position:relative}
+.srs-chk-btn input[type=checkbox]{position:absolute;opacity:0;width:0;height:0}
+.srs-chk-btn.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 12px var(--red-glow)}
+#srs-fields{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.srs-row{animation:fadeIn .3s ease}
+.srs-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;
+  color:var(--gold);text-transform:uppercase;margin-bottom:5px;font-weight:600}
+
+/* ── STATUS CARGA ── */
+.status-wrap{display:flex;gap:8px}
+.st-btn{flex:1;padding:14px 6px;background:var(--bg2);border:2px solid var(--border);
+  border-radius:10px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;text-transform:uppercase}
+.st-btn.on-car{background:#1e4030;border-color:var(--green);color:var(--green);box-shadow:0 0 12px rgba(74,222,128,.2)}
+.st-btn.on-vaz{background:#1a2848;border-color:var(--gold);color:var(--gold);box-shadow:0 0 12px rgba(244,185,66,.2)}
+
+/* ── CLOCK ── */
+.time-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;display:flex;align-items:center;justify-content:space-between}
+#clock{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold);line-height:1}
+#date-disp{font-size:11px;color:var(--muted);text-align:right;line-height:1.4}
+
+/* ── LOCALIZAÇÃO ── */
+.loc-row{display:flex;gap:10px;align-items:flex-start}
+.loc-row textarea{flex:1}
+#btn-loc{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);cursor:pointer;padding:10px 12px;display:flex;flex-direction:column;
+  align-items:center;gap:4px;font-size:10px;font-family:'Barlow',sans-serif;
+  letter-spacing:1px;text-transform:uppercase;flex-shrink:0;transition:all .2s;
+  min-height:90px;justify-content:center}
+#btn-loc:active{background:var(--red);border-color:var(--red);transform:scale(.97)}
+#btn-loc svg{width:22px;height:22px}
+.loc-st{font-size:11px;color:var(--muted);margin-top:6px;padding-left:2px;
+  display:flex;align-items:center;gap:5px}
+.loc-st.ok{color:var(--green)}
+.loc-st.err{color:var(--red)}
+.loc-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* ── BTN REGISTRAR ── */
+#btn-enviar{width:100%;background:linear-gradient(135deg,#128C7E,#25D366);border:none;
+  border-radius:16px;color:#fff;cursor:pointer;padding:18px 24px;
+  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  box-shadow:0 8px 30px rgba(37,211,102,.3);transition:all .2s;position:relative;overflow:hidden}
+#btn-enviar::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transition:left .5s}
+#btn-enviar:active::before{left:100%}
+#btn-enviar:active{transform:scale(.98);box-shadow:0 4px 15px rgba(37,211,102,.2)}
+#btn-enviar svg{width:26px;height:26px;flex-shrink:0}
+
+/* ── FOOTER ── */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:10px 20px;
+  text-align:center;flex-shrink:0;position:fixed;bottom:0;left:0;right:0;z-index:10}
+footer span{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--muted)}
+footer strong{color:var(--red)}
+
+/* ── TOAST ── */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);
+  background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:12px 20px;font-size:13px;color:var(--text);z-index:9999;
+  transition:transform .3s ease;white-space:normal;text-align:center;max-width:88vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:var(--green);color:var(--green)}
+#toast.er{border-color:var(--red);color:var(--red)}
+#toast.in{border-color:var(--gold);color:var(--gold)}
+
+/* ── OVERLAY ENVIANDO ── */
+#ov-send{display:none;position:fixed;inset:0;background:rgba(6,11,24,.88);
+  z-index:8000;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#ov-send.show{display:flex}
+.spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--red);
+  border-radius:50%;animation:spin .8s linear infinite}
+.ov-lbl{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--muted)}
+
+/* ── TELA SUCESSO ── */
+#ov-succ{display:none;position:fixed;inset:0;background:var(--bg);z-index:7000;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;padding:30px;text-align:center}
+#ov-succ.show{display:flex}
+.succ-ico{font-size:60px;animation:pop .4s ease}
+.succ-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;color:var(--green)}
+#succ-id{font-family:'Barlow Condensed',sans-serif;font-size:17px;letter-spacing:3px;color:var(--gold)}
+.succ-sub{font-size:13px;color:var(--muted);max-width:280px;line-height:1.6}
+.succ-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;margin-top:6px}
+#btn-wa-succ{background:linear-gradient(135deg,#128C7E,#25D366);border:none;border-radius:14px;
+  color:#fff;padding:15px 24px;font-family:'Bebas Neue',sans-serif;font-size:19px;
+  letter-spacing:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+#btn-wa-succ svg{width:22px;height:22px}
+#btn-nova{background:var(--surface2);border:1px solid var(--border);border-radius:14px;
+  color:var(--text);padding:13px;font-family:'Bebas Neue',sans-serif;font-size:18px;
+  letter-spacing:3px;cursor:pointer}
+
+/* ── UTILS ── */
+.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(0)}80%{transform:scale(1.1)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║  EDITE APENAS ESTA LINHA ABAIXO ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<script>
+const GAS_URL = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+</script>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <img src="/icons/icon-192.png" alt="SOS">
+  <div class="ib-txt">
+    <strong>Instalar SOS Prando</strong>
+    <span>Acesso rápido na tela inicial</span>
+  </div>
+  <button id="btn-install">INSTALAR</button>
+  <button id="btn-dismiss">✕</button>
+</div>
+
+<!-- OVERLAY ENVIANDO -->
+<div id="ov-send">
+  <div class="spinner"></div>
+  <div class="ov-lbl">Registrando OS...</div>
+</div>
+
+<!-- TELA SUCESSO -->
+<div id="ov-succ">
+  <div class="succ-ico">✅</div>
+  <div class="succ-title">OS Registrada!</div>
+  <div id="succ-id">–</div>
+  <div class="succ-sub">Ordem de serviço enviada e registrada com sucesso.</div>
+  <div class="succ-btns">
+    <button id="btn-wa-succ" onclick="abrirWA()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      ENVIAR WHATSAPP
+    </button>
+    <button id="btn-nova" onclick="resetForm()">+ NOVA OS</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="hstripe"></div>
+  <div class="hinner">
+    <div class="hlogo"><span>SOS</span></div>
+    <div class="htitles">
+      <h2>JC PRANDO</h2>
+      <h1>Formulário SOS</h1>
+      <div class="etag">Ordem de Serviço</div>
+    </div>
+    <div class="hdot-wrap">
+      <span id="online-dot"></span>
+      <span>PWA</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- STEP 1 — TIPO VEÍCULO -->
+  <div class="card" id="c-veiculo">
+    <div class="ctitle">🚛 Tipo de Veículo</div>
+    <div class="tipo-wrap">
+      <button class="tipo-btn" id="btn-cavalo" onclick="setVeiculo('Cavalo')">
+        <span class="ticon">🚛</span>
+        <span class="tlabel">Cavalo</span>
+        <span class="tsub">Apenas CM</span>
+      </button>
+      <button class="tipo-btn" id="btn-carreta" onclick="setVeiculo('Carreta')">
+        <span class="ticon">🚚</span>
+        <span class="tlabel">Carreta</span>
+        <span class="tsub">CM + SRS</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2 — TIPO OS -->
+  <div class="card hidden" id="c-os">
+    <div class="ctitle">🔧 Tipo de Atendimento</div>
+    <div class="tipo-wrap">
+      <button class="tipo-btn" id="btn-socorro" onclick="setTipoOS('Socorro')">
+        <span class="ticon">🚨</span>
+        <span class="tlabel">Socorro</span>
+        <span class="tsub">Estrada / SOS</span>
+      </button>
+      <button class="tipo-btn" id="btn-oficina" onclick="setTipoOS('Oficina')">
+        <span class="ticon">🔧</span>
+        <span class="tlabel">Oficina</span>
+        <span class="tsub">Manutenção</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- IDENTIFICAÇÃO -->
+  <div class="card hidden" id="c-id">
+    <div class="ctitle">👤 Identificação</div>
+
+    <div class="field">
+      <label>Motorista</label>
+      <input type="text" id="motorista" placeholder="Nome completo do motorista" autocomplete="name">
+    </div>
+
+    <div class="field">
+      <label>Frota Prando</label>
+      <div class="frota-input-wrap">
+        <input type="number" id="frota-input" inputmode="numeric"
+          placeholder="Ex: 260" min="100" max="999"
+          oninput="onFrotaType()" autocomplete="off">
+        <div id="frota-sugs" class="frota-sugs"></div>
+      </div>
+      <div id="frota-fb" class="frota-fb"></div>
+    </div>
+
+    <div class="field">
+      <label>Placa CM (Cavalo Mecânico)</label>
+      <div class="placa-auto" id="placa-badge">
+        <span class="placa-val empty" id="placa-disp">Digite o número da frota</span>
+        <span class="placa-tag">AUTO</span>
+      </div>
+      <input type="hidden" id="placa-cm">
+    </div>
+  </div>
+
+  <!-- SEMIRREBOQUE — só Carreta -->
+  <div class="card hidden" id="c-srs">
+    <div class="ctitle">🚚 Semirreboque (SRS)</div>
+
+    <div class="field">
+      <label>Selecione os SRS</label>
+      <div class="srs-checks">
+        <label class="srs-chk-btn" id="sl-1">
+          <input type="checkbox" id="chk-1" onchange="toggleSRS(1)">
+          <span>SRS 1</span>
+        </label>
+        <label class="srs-chk-btn" id="sl-2">
+          <input type="checkbox" id="chk-2" onchange="toggleSRS(2)">
+          <span>SRS 2</span>
+        </label>
+        <label class="srs-chk-btn" id="sl-3">
+          <input type="checkbox" id="chk-3" onchange="toggleSRS(3)">
+          <span>SRS 3</span>
+        </label>
+      </div>
+    </div>
+
+    <div id="srs-fields"></div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Status da Carga</label>
+      <div class="status-wrap">
+        <button class="st-btn" id="st-car" onclick="setStatus('Carregado')">
+          <span>📦</span> Carregado
+        </button>
+        <button class="st-btn" id="st-vaz" onclick="setStatus('Vazio')">
+          <span>🔲</span> Vazio
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLICITAÇÃO -->
+  <div class="card hidden" id="c-sol">
+    <div class="ctitle" id="ct-sol">📋 Solicitação</div>
+
+    <div class="field">
+      <label>Horário da Solicitação</label>
+      <div class="time-box">
+        <div id="clock">--:--:--</div>
+        <div id="date-disp">--</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="lbl-desc">Descrição da Solicitação</label>
+      <textarea id="descricao" placeholder="Descreva detalhadamente o problema..."></textarea>
+    </div>
+  </div>
+
+  <!-- LOCAL -->
+  <div class="card hidden" id="c-local">
+    <div class="ctitle" id="ct-local">📍 Localização</div>
+
+    <!-- Socorro -->
+    <div id="loc-socorro">
+      <div class="loc-row">
+        <textarea id="local-txt" placeholder="Clique em Localizar ou descreva o local (rodovia, km, cidade, referência...)" style="min-height:90px"></textarea>
+        <button id="btn-loc" onclick="getLocation()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+            <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+          </svg>
+          Localizar
+        </button>
+      </div>
+      <div class="loc-st" id="loc-st"></div>
+    </div>
+
+    <!-- Oficina -->
+    <div id="loc-oficina" class="hidden">
+      <div class="field">
+        <label>Nome da Oficina</label>
+        <input type="text" id="of-nome" placeholder="Ex: Mecânica Central – Florestal">
+      </div>
+      <div class="field">
+        <label>Endereço / Referência</label>
+        <textarea id="of-end" placeholder="Rua, número, bairro, cidade..." style="min-height:70px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- BTN REGISTRAR -->
+  <button id="btn-enviar" class="hidden" onclick="submeter()">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    REGISTRAR &amp; ENVIAR
+  </button>
+
+</main>
+
+<footer>
+  <span><strong>Prando Transportes</strong> · Florestal</span>
+</footer>
+
+<script>
+// ════════════════════════════════════
+//  DADOS DE FROTA
+// ════════════════════════════════════
+const FROTAS = {
+  249:'SFF-7B06',251:'SFF-7E95',252:'SFF-7E96',253:'SFF-7E97',
+  255:'SFF-9F13',256:'SFF-9F14',257:'SFF-9F15',258:'SFF-9F16',
+  259:'SFF-9F17',260:'SFG-0G42',261:'SFG-0G43',262:'SFG-0G44',
+  263:'SFG-0G45',264:'SFG-0G46',265:'SFG-0G47',266:'SFG-0G48',
+  267:'SFG-0G49',268:'SFG-0G51',270:'SFG-0G53',271:'SFG-0G54',
+  272:'SFG-0G67',276:'SFG-3C49',280:'SFG-5D23',283:'SFG-5D26',
+  284:'SFG-5D27',291:'SFH-2B34',292:'SFH-2B35',299:'SFJ-6F59',
+  300:'SFJ-6F60',306:'SFJ-2C64'
+};
+
+// ════════════════════════════════════
+//  STATE
+// ════════════════════════════════════
+let S = {
+  veiculo:'', tipoOS:'',
+  srsAtivos: new Set(), statusCarga:'',
+  locData: null, osId:'', msgWA:''
+};
+
+// ════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════
+const $  = id => document.getElementById(id);
+const sh = id => $(id)?.classList.remove('hidden');
+const hi = id => $(id)?.classList.add('hidden');
+function toast(msg, tipo='') {
+  const t=$('toast'); t.textContent=msg;
+  t.className='show '+ (tipo==='ok'?'ok':tipo==='er'?'er':'in');
+  setTimeout(()=>t.className='',3500);
+}
+
+// ════════════════════════════════════
+//  RELÓGIO
+// ════════════════════════════════════
+(function clock(){
+  const p=n=>String(n).padStart(2,'0');
+  const d=new Date();
+  $('clock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const mes=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  $('date-disp').innerHTML=`${dias[d.getDay()]}, ${d.getDate()} ${mes[d.getMonth()]} ${d.getFullYear()}`;
+  setTimeout(clock,1000);
+})();
+
+// ════════════════════════════════════
+//  STEP 1 — VEÍCULO
+// ════════════════════════════════════
+function setVeiculo(v) {
+  S.veiculo = v;
+  $('btn-cavalo').className  = 'tipo-btn' + (v==='Cavalo'  ? ' sel-gold':'');
+  $('btn-carreta').className = 'tipo-btn' + (v==='Carreta' ? ' sel-gold':'');
+  sh('c-os');
+  // reset etapa 2 se mudou
+  S.tipoOS='';
+  $('btn-socorro').className='tipo-btn';
+  $('btn-oficina').className='tipo-btn';
+  hi('c-id'); hi('c-srs'); hi('c-sol'); hi('c-local'); hi('btn-enviar');
+}
+
+// ════════════════════════════════════
+//  STEP 2 — TIPO OS
+// ════════════════════════════════════
+function setTipoOS(t) {
+  S.tipoOS = t;
+  $('btn-socorro').className = 'tipo-btn' + (t==='Socorro' ? ' sel-red' :'');
+  $('btn-oficina').className = 'tipo-btn' + (t==='Oficina' ? ' sel-blue':'');
+  sh('c-id');
+  S.veiculo==='Carreta' ? sh('c-srs') : hi('c-srs');
+  sh('c-sol'); sh('c-local'); sh('btn-enviar');
+  if (t==='Oficina') {
+    $('ct-sol').textContent  = '📋 Descrição do Serviço';
+    $('lbl-desc').textContent= 'Descrição do Serviço';
+    $('descricao').placeholder='Descreva o serviço a realizar na oficina...';
+    $('ct-local').textContent= '🔧 Oficina';
+    hi('loc-socorro'); sh('loc-oficina');
+  } else {
+    $('ct-sol').textContent  = '📋 Solicitação';
+    $('lbl-desc').textContent= 'Descrição da Solicitação';
+    $('descricao').placeholder='Descreva detalhadamente o problema...';
+    $('ct-local').textContent= '📍 Localização';
+    sh('loc-socorro'); hi('loc-oficina');
+  }
+  setTimeout(()=>$('c-id').scrollIntoView({behavior:'smooth',block:'start'}),120);
+}
+
+// ════════════════════════════════════
+//  FROTA
+// ════════════════════════════════════
+function _setPlaca(frota, placa) {
+  $('placa-disp').textContent = placa;
+  $('placa-disp').className   = 'placa-val';
+  $('placa-badge').classList.add('filled');
+  $('placa-cm').value         = placa;
+  $('frota-input').classList.remove('fi-err');
+  $('frota-input').classList.add('fi-ok');
+  $('frota-fb').textContent   = `✓ Frota ${frota} · ${placa}`;
+  $('frota-fb').className     = 'frota-fb ok';
+}
+function _clearPlaca() {
+  $('placa-disp').textContent = 'Digite o número da frota';
+  $('placa-disp').className   = 'placa-val empty';
+  $('placa-badge').classList.remove('filled');
+  $('placa-cm').value         = '';
+}
+function onFrotaType() {
+  const inp  = $('frota-input');
+  const sugs = $('frota-sugs');
+  const fb   = $('frota-fb');
+  const val  = inp.value.trim();
+  sugs.classList.remove('open'); sugs.innerHTML='';
+  if (!val) {
+    _clearPlaca();
+    inp.classList.remove('fi-ok','fi-err');
+    fb.textContent=''; fb.className='frota-fb';
+    return;
+  }
+  const num = parseInt(val);
+  if (FROTAS[num]) { _setPlaca(num, FROTAS[num]); return; }
+  const hits = Object.entries(FROTAS).filter(([k])=>String(k).startsWith(val)).sort(([a],[b])=>a-b);
+  if (hits.length) {
+    inp.classList.remove('fi-ok','fi-err');
+    fb.textContent=`${hits.length} frota(s) encontrada(s)`; fb.className='frota-fb hint';
+    _clearPlaca();
+    hits.forEach(([k,v])=>{
+      const d=document.createElement('div');
+      d.className='fsug';
+      d.innerHTML=`<span class="fsug-num">${k}</span><span class="fsug-placa">${v}</span>`;
+      d.onclick=()=>{ inp.value=k; sugs.classList.remove('open'); sugs.innerHTML=''; _setPlaca(k,v); };
+      sugs.appendChild(d);
+    });
+    sugs.classList.add('open');
+  } else {
+    _clearPlaca();
+    inp.classList.remove('fi-ok'); inp.classList.add('fi-err');
+    fb.textContent='✗ Frota não encontrada'; fb.className='frota-fb err';
+  }
+}
+document.addEventListener('click', e=>{
+  const s=$('frota-sugs');
+  if (s && !s.contains(e.target) && e.target.id!=='frota-input') s.classList.remove('open');
+});
+
+// ════════════════════════════════════
+//  SRS
+// ════════════════════════════════════
+function toggleSRS(n) {
+  const chk=$(`chk-${n}`), lbl=$(`sl-${n}`);
+  chk.checked ? S.srsAtivos.add(n) : S.srsAtivos.delete(n);
+  lbl.classList.toggle('on', chk.checked);
+  renderSRS();
+}
+function renderSRS() {
+  const c=$('srs-fields');
+  const vals={};
+  [1,2,3].forEach(i=>{ const e=$(`srs-${i}`); if(e) vals[i]=e.value; });
+  c.innerHTML='';
+  [...S.srsAtivos].sort().forEach(n=>{
+    const d=document.createElement('div');
+    d.className='srs-row';
+    d.innerHTML=`<div class="srs-lbl">Placa SRS ${n}</div>
+      <input type="text" id="srs-${n}" class="placa-input"
+        placeholder="ABC-1234" maxlength="8" oninput="fmtPlaca(this)">`;
+    c.appendChild(d);
+    if(vals[n]) $(`srs-${n}`).value=vals[n];
+  });
+}
+function fmtPlaca(el) {
+  let v=el.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(v.length>3) v=v.slice(0,3)+'-'+v.slice(3,7);
+  el.value=v;
+}
+
+// ════════════════════════════════════
+//  STATUS CARGA
+// ════════════════════════════════════
+function setStatus(v) {
+  S.statusCarga=v;
+  $('st-car').className='st-btn'+(v==='Carregado'?' on-car':'');
+  $('st-vaz').className='st-btn'+(v==='Vazio'?' on-vaz':'');
+}
+
+// ════════════════════════════════════
+//  GEOLOCALIZAÇÃO
+// ════════════════════════════════════
+function getLocation() {
+  const btn=$('btn-loc'), st=$('loc-st');
+  btn.style.opacity='.6';
+  st.innerHTML='<span class="loc-dot"></span> Obtendo...'; st.className='loc-st';
+  if(!navigator.geolocation){
+    st.innerHTML='<span class="loc-dot"></span> GPS não suportado'; st.className='loc-st err';
+    btn.style.opacity='1'; return;
+  }
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const{latitude:lat,longitude:lng,accuracy:acc}=pos.coords;
+    S.locData={lat,lng,acc};
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,{headers:{'Accept-Language':'pt-BR'}});
+      const d=await r.json(); const a=d.address||{};
+      const pts=[a.road||a.pedestrian||'',a.suburb||a.neighbourhood||'',
+        a.city||a.town||a.village||a.municipality||'',a.state||'',a.country||''].filter(Boolean);
+      const gm=`https://maps.google.com/?q=${lat},${lng}`;
+      $('local-txt').value=`${pts.join(', ')}\nCoordenadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}\nPrecisão: ~${Math.round(acc)}m\nMaps: ${gm}`;
+    }catch{
+      $('local-txt').value=`Coordenadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}\nPrecisão: ~${Math.round(acc)}m\nMaps: https://maps.google.com/?q=${lat},${lng}`;
+    }
+    st.innerHTML=`<span class="loc-dot"></span> Localização obtida · ~${Math.round(acc)}m`;
+    st.className='loc-st ok'; btn.style.opacity='1';
+  },err=>{
+    const m={1:'Permissão negada',2:'Indisponível',3:'Tempo esgotado'};
+    st.innerHTML=`<span class="loc-dot"></span> ${m[err.code]||'Erro'}`;
+    st.className='loc-st err'; btn.style.opacity='1';
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+
+// ════════════════════════════════════
+//  COLETA + VALIDA
+// ════════════════════════════════════
+function coletar() {
+  const motorista = $('motorista').value.trim();
+  const frota     = $('frota-input').value.trim();
+  const placaCM   = $('placa-cm').value.trim();
+  const descricao = $('descricao').value.trim();
+  let local='', lat='', lng='';
+  if(S.tipoOS==='Oficina'){
+    const nm=$('of-nome').value.trim(), en=$('of-end').value.trim();
+    local=[nm,en].filter(Boolean).join(' – ');
+  } else {
+    local=$('local-txt').value.trim();
+    if(S.locData){ lat=S.locData.lat; lng=S.locData.lng; }
+  }
+  const srsArr=[...S.srsAtivos].sort();
+  const srsAtivos=srsArr.join(',');
+  const placasSRS=srsArr.map(n=>{
+    const e=$(`srs-${n}`); return `SRS${n}:${(e?.value||'').trim()||'–'}`;
+  }).join(' | ');
+  return {motorista,frota,placaCM,descricao,local,lat,lng,srsAtivos,placasSRS};
+}
+function validar(d) {
+  if(!S.veiculo)  { toast('⚠ Selecione o tipo de veículo','er'); return false; }
+  if(!S.tipoOS)   { toast('⚠ Selecione o tipo de atendimento','er'); return false; }
+  if(!d.motorista){ toast('⚠ Informe o nome do motorista','er'); $('motorista').focus(); return false; }
+  if(!d.placaCM)  { toast('⚠ Digite um número de frota válido','er'); $('frota-input').focus(); return false; }
+  if(!d.descricao){ toast('⚠ Informe a descrição','er'); $('descricao').focus(); return false; }
+  if(!d.local)    {
+    toast(S.tipoOS==='Oficina' ? '⚠ Informe o nome da oficina' : '⚠ Informe o local','er');
+    return false;
+  }
+  return true;
+}
+
+// ════════════════════════════════════
+//  MENSAGEM WHATSAPP
+// ════════════════════════════════════
+function montarWA(d, id) {
+  const now=new Date(), p=n=>String(n).padStart(2,'0');
+  const dias=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const mes=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const hr=`${p(now.getHours())}:${p(now.getMinutes())}`;
+  const dt=`${dias[now.getDay()]}, ${now.getDate()} de ${mes[now.getMonth()]} de ${now.getFullYear()}`;
+  const ico=S.tipoOS==='Socorro'?'🚨':'🔧';
+  const lbl=S.tipoOS==='Socorro'?'SOCORRO – SOS':'OFICINA';
+
+  let m=`${ico} *${lbl} – ORDEM DE SERVIÇO*\n_JC Prando Transportes_\n`;
+  if(id) m+=`📋 *ID:* \`${id}\`\n`;
+  m+=`━━━━━━━━━━━━━━━━━━━━\n\n`;
+  m+=`👤 *IDENTIFICAÇÃO*\n`;
+  m+=`▸ Motorista: *${d.motorista}*\n`;
+  m+=`▸ Tipo: *${S.veiculo}*\n`;
+  if(d.frota) m+=`▸ Frota: *${d.frota}*\n`;
+  m+=`▸ Placa CM: *${d.placaCM}*\n`;
+  if(S.veiculo==='Carreta' && S.srsAtivos.size>0){
+    [...S.srsAtivos].sort().forEach(n=>{
+      const e=$(`srs-${n}`);
+      m+=`▸ Placa SRS ${n}: *${(e?.value||'').trim()||'–'}*\n`;
+    });
+    if(S.statusCarga) m+=`▸ Status: *${S.statusCarga}* ${S.statusCarga==='Carregado'?'📦':'🔲'}\n`;
+  }
+  m+=`\n📋 *${S.tipoOS==='Oficina'?'SERVIÇO':'SOLICITAÇÃO'}*\n`;
+  m+=`▸ Data: _${dt}_\n▸ Horário: *${hr}*\n▸ Descrição:\n_${d.descricao}_\n`;
+  m+=S.tipoOS==='Oficina' ? `\n🔧 *OFICINA*\n${d.local}\n` : `\n📍 *LOCALIZAÇÃO*\n${d.local}\n`;
+  m+=`\n━━━━━━━━━━━━━━━━━━━━\n_Prando Transportes – Florestal_`;
+  return m;
+}
+
+// ════════════════════════════════════
+//  SUBMETER
+// ════════════════════════════════════
+async function submeter() {
+  const d=coletar();
+  if(!validar(d)) return;
+  $('ov-send').classList.add('show');
+  const payload={
+    action:'abrir', tipoVeiculo:S.veiculo, tipoOS:S.tipoOS,
+    motorista:d.motorista, frota:d.frota, placaCM:d.placaCM,
+    srsAtivos:d.srsAtivos, placasSRS:d.placasSRS, statusCarga:S.statusCarga,
+    descricao:d.descricao, local:d.local, latitude:d.lat, longitude:d.lng
+  };
+  let osId='';
+  try{
+    const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const res=await r.json();
+    if(res.ok) osId=res.id;
+    else throw new Error(res.erro||'Erro');
+  }catch(e){
+    $('ov-send').classList.remove('show');
+    toast('⚠ Falha ao enviar. Verifique a conexão.','er');
+    console.error(e); return;
+  }
+  S.osId=osId;
+  S.msgWA=montarWA(d,osId);
+  $('ov-send').classList.remove('show');
+  $('succ-id').textContent=osId||'–';
+  $('ov-succ').classList.add('show');
+}
+
+function abrirWA() {
+  if(!S.msgWA){ const d=coletar(); S.msgWA=montarWA(d,S.osId); }
+  window.open(`https://wa.me/?text=${encodeURIComponent(S.msgWA)}`, '_blank');
+}
+
+// ════════════════════════════════════
+//  RESET
+// ════════════════════════════════════
+function resetForm() {
+  S={veiculo:'',tipoOS:'',srsAtivos:new Set(),statusCarga:'',locData:null,osId:'',msgWA:''};
+  $('ov-succ').classList.remove('show');
+  ['motorista','descricao','local-txt','of-nome','of-end'].forEach(id=>{ if($(id)) $(id).value=''; });
+  $('frota-input').value=''; $('frota-input').classList.remove('fi-ok','fi-err');
+  $('frota-fb').textContent=''; $('frota-fb').className='frota-fb';
+  $('placa-cm').value=''; $('placa-disp').textContent='Digite o número da frota';
+  $('placa-disp').className='placa-val empty'; $('placa-badge').classList.remove('filled');
+  $('srs-fields').innerHTML=''; $('loc-st').innerHTML='';
+  [1,2,3].forEach(i=>{ $(`chk-${i}`).checked=false; $(`sl-${i}`).classList.remove('on'); });
+  ['btn-cavalo','btn-carreta','btn-socorro','btn-oficina'].forEach(id=>$((id)).className='tipo-btn');
+  ['st-car','st-vaz'].forEach(id=>$(id).className='st-btn');
+  hi('c-os'); hi('c-id'); hi('c-srs'); hi('c-sol'); hi('c-local'); hi('btn-enviar');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ════════════════════════════════════
+//  PWA
+// ════════════════════════════════════
+let _prompt=null;
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js',{scope:'/'})
+      .then(r=>setInterval(()=>r.update(),60000)).catch(()=>{});
+  });
+}
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); _prompt=e;
+  setTimeout(()=>{ if(!sessionStorage.getItem('ib-off')) $('install-banner').classList.add('show'); },3000);
+});
+$('btn-install').addEventListener('click',async()=>{
+  if(!_prompt) return;
+  _prompt.prompt();
+  const{outcome}=await _prompt.userChoice;
+  _prompt=null; $('install-banner').classList.remove('show');
+  if(outcome==='accepted') toast('✓ App instalado!','ok');
+});
+$('btn-dismiss').addEventListener('click',()=>{
+  $('install-banner').classList.remove('show');
+  sessionStorage.setItem('ib-off','1');
+});
+window.addEventListener('appinstalled',()=>$('install-banner').classList.remove('show'));
+
+// Online dot
+(function dot(){
+  const el=$('online-dot'); if(!el) return;
+  const on=navigator.onLine;
+  el.style.background=on?'#4ade80':'#f59e0b';
+  el.style.boxShadow =on?'0 0 6px #4ade80':'0 0 6px #f59e0b';
+})();
+window.addEventListener('online', ()=>{const el=$('online-dot');if(el){el.style.background='#4ade80';el.style.boxShadow='0 0 6px #4ade80';}});
+window.addEventListener('offline',()=>{const el=$('online-dot');if(el){el.style.background='#f59e0b';el.style.boxShadow='0 0 6px #f59e0b';}});
+</script>
+</body>
+</html>
