@@ -782,27 +782,41 @@ async function submeter() {
   const d=coletar();
   if(!validar(d)) return;
   $('ov-send').classList.add('show');
-  const payload={
-    action:'abrir', tipoVeiculo:S.veiculo, tipoOS:S.tipoOS,
-    motorista:d.motorista, frota:d.frota, placaCM:d.placaCM,
-    srsAtivos:d.srsAtivos, placasSRS:d.placasSRS, statusCarga:S.statusCarga,
-    descricao:d.descricao, local:d.local, latitude:d.lat, longitude:d.lng
-  };
+
+  // Apps Script exige GET com parâmetros na URL (POST com JSON causa CORS)
+  const params = new URLSearchParams({
+    action   : 'abrir',
+    veiculo  : S.veiculo,
+    tipoOS   : S.tipoOS,
+    motorista: d.motorista,
+    frota    : d.frota,
+    placaCM  : d.placaCM,
+    srsAtivos: d.srsAtivos,
+    placasSRS: d.placasSRS,
+    statusCarga: S.statusCarga,
+    descricao: d.descricao,
+    local    : d.local,
+    latitude : d.lat || '',
+    longitude: d.lng || '',
+    _t       : Date.now()
+  });
+
   let osId='';
   try{
-    const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const res=await r.json();
-    if(res.ok) osId=res.id;
-    else throw new Error(res.erro||'Erro');
+    const r   = await fetch(`${GAS_URL}?${params.toString()}`);
+    const res = await r.json();
+    if(res.ok) osId = res.id;
+    else throw new Error(res.erro || 'Erro no servidor');
   }catch(e){
     $('ov-send').classList.remove('show');
     toast('⚠ Falha ao enviar. Verifique a conexão.','er');
-    console.error(e); return;
+    console.error('Erro submeter:', e);
+    return;
   }
-  S.osId=osId;
-  S.msgWA=montarWA(d,osId);
+  S.osId  = osId;
+  S.msgWA = montarWA(d, osId);
   $('ov-send').classList.remove('show');
-  $('succ-id').textContent=osId||'–';
+  $('succ-id').textContent = osId || '–';
   $('ov-succ').classList.add('show');
 }
 
