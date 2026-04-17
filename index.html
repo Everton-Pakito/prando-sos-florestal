@@ -115,6 +115,23 @@ input[type=text],input[type=number],textarea{
 input:focus,textarea:focus{border-color:var(--border-act);box-shadow:0 0 0 3px var(--red-glow);background:var(--bg3)}
 input::placeholder,textarea::placeholder{color:var(--muted);font-size:14px}
 textarea{resize:vertical;min-height:90px;line-height:1.5}
+/* ── REQUIRED FIELD STATES ── */
+input.field-err,textarea.field-err{
+  border-color:#e63946!important;
+  box-shadow:0 0 0 3px rgba(230,57,70,.25)!important;
+  background:rgba(230,57,70,.05)!important;
+  animation:shake .35s ease}
+label .req{color:var(--red);margin-left:2px}
+.field-msg{font-size:11px;margin-top:5px;padding-left:2px;min-height:16px;
+  display:flex;align-items:center;gap:4px;animation:fadeIn .2s ease}
+.field-msg.err{color:var(--red)}
+.field-msg.err::before{content:'⚠';font-size:12px}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}}
 
 /* ── FROTA ── */
 .frota-input-wrap{position:relative}
@@ -160,6 +177,8 @@ textarea{resize:vertical;min-height:90px;line-height:1.5}
   justify-content:center;user-select:none;position:relative}
 .srs-chk-btn input[type=checkbox]{position:absolute;opacity:0;width:0;height:0}
 .srs-chk-btn.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 12px var(--red-glow)}
+.srs-checks.grp-err .srs-chk-btn{border-color:rgba(230,57,70,.7)!important;animation:shake .35s ease}
+.status-wrap.grp-err .st-btn{border-color:rgba(230,57,70,.7)!important;animation:shake .35s ease}
 #srs-fields{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .srs-row{animation:fadeIn .3s ease}
 .srs-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;
@@ -265,7 +284,7 @@ footer strong{color:var(--red)}
 <!-- ║  EDITE APENAS ESTA LINHA ABAIXO ║ -->
 <!-- ╚══════════════════════════════════╝ -->
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEiibYzq6CVpHGsTAb6E1bkP8BVA-FF_-DwwztdWmzSr8RjEsA/exec';
+const GAS_URL = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
 </script>
 
 <!-- INSTALL BANNER -->
@@ -361,12 +380,13 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
     <div class="ctitle">👤 Identificação</div>
 
     <div class="field">
-      <label>Motorista</label>
-      <input type="text" id="motorista" placeholder="Nome completo do motorista" autocomplete="name">
+      <label>Motorista <span class="req">*</span></label>
+      <input type="text" id="motorista" placeholder="Nome completo do motorista" autocomplete="name" oninput="clearErr('motorista')">
+      <div class="field-msg" id="msg-motorista"></div>
     </div>
 
     <div class="field">
-      <label>Frota Prando</label>
+      <label>Frota Prando <span class="req">*</span></label>
       <div class="frota-input-wrap">
         <input type="number" id="frota-input" inputmode="numeric"
           placeholder="Ex: 260" min="100" max="999"
@@ -374,6 +394,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
         <div id="frota-sugs" class="frota-sugs"></div>
       </div>
       <div id="frota-fb" class="frota-fb"></div>
+      <div class="field-msg" id="msg-frota"></div>
     </div>
 
     <div class="field">
@@ -391,7 +412,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
     <div class="ctitle">🚚 Semirreboque (SRS)</div>
 
     <div class="field">
-      <label>Selecione os SRS</label>
+      <label>Selecione os SRS <span class="req">*</span></label>
       <div class="srs-checks">
         <label class="srs-chk-btn" id="sl-1">
           <input type="checkbox" id="chk-1" onchange="toggleSRS(1)">
@@ -409,9 +430,10 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
     </div>
 
     <div id="srs-fields"></div>
+    <div class="field-msg" id="msg-srs"></div>
 
     <div class="field" style="margin-top:14px">
-      <label>Status da Carga</label>
+      <label>Status da Carga <span class="req">*</span></label>
       <div class="status-wrap">
         <button class="st-btn" id="st-car" onclick="setStatus('Carregado')">
           <span>📦</span> Carregado
@@ -420,6 +442,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
           <span>🔲</span> Vazio
         </button>
       </div>
+      <div class="field-msg" id="msg-status"></div>
     </div>
   </div>
 
@@ -436,8 +459,9 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
     </div>
 
     <div class="field">
-      <label id="lbl-desc">Descrição da Solicitação</label>
-      <textarea id="descricao" placeholder="Descreva detalhadamente o problema..."></textarea>
+      <label id="lbl-desc">Descrição da Solicitação <span class="req">*</span></label>
+      <textarea id="descricao" placeholder="Descreva detalhadamente o problema..." oninput="clearErr('descricao')"></textarea>
+      <div class="field-msg" id="msg-descricao"></div>
     </div>
   </div>
 
@@ -448,7 +472,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
     <!-- Socorro -->
     <div id="loc-socorro">
       <div class="loc-row">
-        <textarea id="local-txt" placeholder="Clique em Localizar ou descreva o local (rodovia, km, cidade, referência...)" style="min-height:90px"></textarea>
+        <textarea id="local-txt" placeholder="Clique em Localizar ou descreva o local (rodovia, km, cidade, referência...)" style="min-height:90px" oninput="clearErr('local-txt')"></textarea>
         <button id="btn-loc" onclick="getLocation()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
@@ -465,7 +489,8 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
     <div id="loc-oficina" class="hidden">
       <div class="field">
         <label>Nome da Oficina</label>
-        <input type="text" id="of-nome" placeholder="Ex: Mecânica Central – Florestal">
+        <input type="text" id="of-nome" placeholder="Ex: Mecânica Central – Florestal" oninput="clearErr('of-nome')">
+        <div class="field-msg" id="msg-of-nome"></div>
       </div>
       <div class="field">
         <label>Endereço / Referência</label>
@@ -640,6 +665,10 @@ function toggleSRS(n) {
   const chk=$(`chk-${n}`), lbl=$(`sl-${n}`);
   chk.checked ? S.srsAtivos.add(n) : S.srsAtivos.delete(n);
   lbl.classList.toggle('on', chk.checked);
+  // Clear SRS error on interaction
+  const wrap=document.querySelector('.srs-checks');
+  if(wrap) wrap.classList.remove('grp-err');
+  const m=$('msg-srs'); if(m){ m.textContent=''; m.className='field-msg'; }
   renderSRS();
 }
 function renderSRS() {
@@ -670,6 +699,10 @@ function setStatus(v) {
   S.statusCarga=v;
   $('st-car').className='st-btn'+(v==='Carregado'?' on-car':'');
   $('st-vaz').className='st-btn'+(v==='Vazio'?' on-vaz':'');
+  // Clear status error on selection
+  const wrap=document.querySelector('.status-wrap');
+  if(wrap) wrap.classList.remove('grp-err');
+  const m=$('msg-status'); if(m){ m.textContent=''; m.className='field-msg'; }
 }
 
 // ════════════════════════════════════
@@ -728,17 +761,77 @@ function coletar() {
   }).join(' | ');
   return {motorista,frota,placaCM,descricao,local,lat,lng,srsAtivos,placasSRS};
 }
+function markErr(inputId, msgId, msg) {
+  const el=$(inputId);
+  if(el){ el.classList.add('field-err'); el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus(); }
+  const m=$(msgId); if(m){ m.textContent=msg; m.className='field-msg err'; }
+}
+function clearErr(inputId) {
+  const el=$(inputId); if(el) el.classList.remove('field-err');
+  // remove msg do mesmo field
+  const m=$('msg-'+inputId); if(m){ m.textContent=''; m.className='field-msg'; }
+}
+function clearAllErr() {
+  document.querySelectorAll('.field-err').forEach(e=>e.classList.remove('field-err'));
+  document.querySelectorAll('.grp-err').forEach(e=>e.classList.remove('grp-err'));
+  document.querySelectorAll('.field-msg').forEach(m=>{ m.textContent=''; m.className='field-msg'; });
+}
+
 function validar(d) {
-  if(!S.veiculo)  { toast('⚠ Selecione o tipo de veículo','er'); return false; }
-  if(!S.tipoOS)   { toast('⚠ Selecione o tipo de atendimento','er'); return false; }
-  if(!d.motorista){ toast('⚠ Informe o nome do motorista','er'); $('motorista').focus(); return false; }
-  if(!d.placaCM)  { toast('⚠ Digite um número de frota válido','er'); $('frota-input').focus(); return false; }
-  if(!d.descricao){ toast('⚠ Informe a descrição','er'); $('descricao').focus(); return false; }
-  if(!d.local)    {
-    toast(S.tipoOS==='Oficina' ? '⚠ Informe o nome da oficina' : '⚠ Informe o local','er');
+  clearAllErr();
+  let ok = true;
+
+  if(!S.veiculo) {
+    toast('⚠ Selecione o tipo de veículo','er');
+    $('c-veiculo').scrollIntoView({behavior:'smooth',block:'start'});
     return false;
   }
-  return true;
+  if(!S.tipoOS) {
+    toast('⚠ Selecione o tipo de atendimento','er');
+    $('c-os').scrollIntoView({behavior:'smooth',block:'start'});
+    return false;
+  }
+  if(!d.motorista) {
+    markErr('motorista','msg-motorista','Campo obrigatório');
+    ok = false;
+  }
+  if(!d.placaCM) {
+    markErr('frota-input','msg-frota','Selecione uma frota válida');
+    ok = false;
+  }
+  if(!d.descricao) {
+    markErr('descricao','msg-descricao','Campo obrigatório');
+    ok = false;
+  }
+  // SRS obrigatório quando Carreta
+  if(S.veiculo==='Carreta') {
+    if(S.srsAtivos.size === 0) {
+      const wrap=$('srs-checks')||document.querySelector('.srs-checks');
+      if(wrap){ wrap.classList.add('grp-err'); wrap.scrollIntoView({behavior:'smooth',block:'center'}); }
+      const m=$('msg-srs'); if(m){ m.textContent='Selecione ao menos 1 SRS'; m.className='field-msg err'; }
+      ok = false;
+    }
+    if(!S.statusCarga) {
+      const wrap=document.querySelector('.status-wrap');
+      if(wrap){ wrap.classList.add('grp-err'); if(ok) wrap.scrollIntoView({behavior:'smooth',block:'center'}); }
+      const m=$('msg-status'); if(m){ m.textContent='Selecione o status da carga'; m.className='field-msg err'; }
+      ok = false;
+    }
+  }
+
+  if(!d.local) {
+    if(S.tipoOS==='Oficina') {
+      markErr('of-nome','msg-of-nome','Informe o nome da oficina');
+    } else {
+      const lt=$('local-txt');
+      if(lt){ lt.classList.add('field-err'); lt.scrollIntoView({behavior:'smooth',block:'center'}); }
+      toast('⚠ Informe o local ou use a localização automática','er');
+    }
+    ok = false;
+  }
+
+  if(!ok) toast('⚠ Preencha os campos obrigatórios','er');
+  return ok;
 }
 
 // ════════════════════════════════════
@@ -830,6 +923,7 @@ function abrirWA() {
 // ════════════════════════════════════
 function resetForm() {
   S={veiculo:'',tipoOS:'',srsAtivos:new Set(),statusCarga:'',locData:null,osId:'',msgWA:''};
+  clearAllErr();
   $('ov-succ').classList.remove('show');
   ['motorista','descricao','local-txt','of-nome','of-end'].forEach(id=>{ if($(id)) $(id).value=''; });
   $('frota-input').value=''; $('frota-input').classList.remove('fi-ok','fi-err');
