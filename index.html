@@ -115,6 +115,23 @@ input[type=text],input[type=number],textarea{
 input:focus,textarea:focus{border-color:var(--border-act);box-shadow:0 0 0 3px var(--red-glow);background:var(--bg3)}
 input::placeholder,textarea::placeholder{color:var(--muted);font-size:14px}
 textarea{resize:vertical;min-height:90px;line-height:1.5}
+/* ── OFICINA SELECT ── */
+.of-sel-wrap { position: relative; }
+.of-sel-wrap::after {
+  content: '▾'; position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%); color: var(--red); font-size: 16px; pointer-events: none;
+}
+.of-select {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-family: 'Barlow', sans-serif;
+  font-size: 15px; padding: 11px 40px 11px 14px; outline: none; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.of-select:focus { border-color: var(--border-act); box-shadow: 0 0 0 3px var(--red-glow); background: var(--bg3); }
+.of-select option { background: var(--bg2); color: var(--text); }
+.of-select.field-err { border-color: #e63946!important; box-shadow: 0 0 0 3px rgba(230,57,70,.25)!important; }
+
 /* ── REQUIRED FIELD STATES ── */
 input.field-err,textarea.field-err{
   border-color:#e63946!important;
@@ -488,9 +505,24 @@ const GAS_URL = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
     <!-- Oficina -->
     <div id="loc-oficina" class="hidden">
       <div class="field">
-        <label>Nome da Oficina</label>
-        <input type="text" id="of-nome" placeholder="Ex: Mecânica Central – Florestal" oninput="clearErr('of-nome')">
+        <label>Oficina <span class="req">*</span></label>
+        <div class="of-sel-wrap">
+          <select id="of-sel" onchange="onOficinaSelect()" class="of-select">
+            <option value="">— Selecione a Oficina —</option>
+            <option value="Atruck">Atruck</option>
+            <option value="Vidotti">Vidotti</option>
+            <option value="MJF Truck">MJF Truck</option>
+            <option value="Laponia">Laponia</option>
+            <option value="Base Prando">Base Prando</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
         <div class="field-msg" id="msg-of-nome"></div>
+      </div>
+      <div class="field hidden" id="of-outros-wrap">
+        <label>Nome da Oficina <span class="req">*</span></label>
+        <input type="text" id="of-nome" placeholder="Informe o nome da oficina" oninput="clearErr('of-nome')">
+        <div class="field-msg" id="msg-of-nome-custom"></div>
       </div>
       <div class="field">
         <label>Endereço / Referência</label>
@@ -661,6 +693,23 @@ document.addEventListener('click', e=>{
 // ════════════════════════════════════
 //  SRS
 // ════════════════════════════════════
+// ── OFICINA SELECT ──
+function onOficinaSelect() {
+  const sel = $('of-sel');
+  const wrap = $('of-outros-wrap');
+  const msgEl = $('msg-of-nome');
+  // Clear errors
+  sel.classList.remove('field-err');
+  if(msgEl){ msgEl.textContent=''; msgEl.className='field-msg'; }
+  if(sel.value === 'Outros') {
+    wrap.classList.remove('hidden');
+    setTimeout(()=>$('of-nome')?.focus(), 100);
+  } else {
+    wrap.classList.add('hidden');
+    if($('of-nome')) $('of-nome').value = '';
+  }
+}
+
 function toggleSRS(n) {
   const chk=$(`chk-${n}`), lbl=$(`sl-${n}`);
   chk.checked ? S.srsAtivos.add(n) : S.srsAtivos.delete(n);
@@ -748,7 +797,9 @@ function coletar() {
   const descricao = $('descricao').value.trim();
   let local='', lat='', lng='';
   if(S.tipoOS==='Oficina'){
-    const nm=$('of-nome').value.trim(), en=$('of-end').value.trim();
+    const sel=$('of-sel'); const selVal=sel?sel.value:'';
+    const nm = selVal==='Outros' ? ($('of-nome')?.value||'').trim() : selVal;
+    const en=$('of-end').value.trim();
     local=[nm,en].filter(Boolean).join(' – ');
   } else {
     local=$('local-txt').value.trim();
@@ -821,13 +872,27 @@ function validar(d) {
 
   if(!d.local) {
     if(S.tipoOS==='Oficina') {
-      markErr('of-nome','msg-of-nome','Informe o nome da oficina');
+      const sel=$('of-sel');
+      if(sel){ sel.classList.add('field-err'); sel.scrollIntoView({behavior:'smooth',block:'center'}); }
+      const m=$('msg-of-nome'); if(m){ m.textContent='Selecione a oficina'; m.className='field-msg err'; }
     } else {
       const lt=$('local-txt');
       if(lt){ lt.classList.add('field-err'); lt.scrollIntoView({behavior:'smooth',block:'center'}); }
       toast('⚠ Informe o local ou use a localização automática','er');
     }
     ok = false;
+  }
+
+  // Se oficina = Outros, exige texto
+  if(S.tipoOS==='Oficina') {
+    const sel=$('of-sel');
+    if(sel && sel.value==='Outros') {
+      const nm=($('of-nome')?.value||'').trim();
+      if(!nm) {
+        markErr('of-nome','msg-of-nome-custom','Informe o nome da oficina');
+        ok = false;
+      }
+    }
   }
 
   if(!ok) toast('⚠ Preencha os campos obrigatórios','er');
@@ -926,6 +991,8 @@ function resetForm() {
   clearAllErr();
   $('ov-succ').classList.remove('show');
   ['motorista','descricao','local-txt','of-nome','of-end'].forEach(id=>{ if($(id)) $(id).value=''; });
+  if($('of-sel')) $('of-sel').value='';
+  $('of-outros-wrap')?.classList.add('hidden');
   $('frota-input').value=''; $('frota-input').classList.remove('fi-ok','fi-err');
   $('frota-fb').textContent=''; $('frota-fb').className='frota-fb';
   $('placa-cm').value=''; $('placa-disp').textContent='Digite o número da frota';
