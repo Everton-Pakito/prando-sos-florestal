@@ -193,7 +193,7 @@ main{flex:1;padding:8px 12px 24px;display:flex;flex-direction:column;gap:10px;ov
 <!-- ║  EDITE APENAS ESTAS DUAS LINHAS     ║ -->
 <!-- ╚══════════════════════════════════════╝ -->
 <script>
-const GAS_URL   = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEiibYzq6CVpHGsTAb6E1bkP8BVA-FF_-DwwztdWmzSr8RjEsA/exec';
+const GAS_URL   = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEiibYzq6CVpHGsTAb6E1bkP8BVA-FF_-DwwztdWmzSr8RjEsA/exec'';
 const ADM_SENHA = 'Prando2026'; // ← MUDE PARA SUA SENHA
 </script>
 
@@ -482,22 +482,59 @@ $('modal').addEventListener('click',e=>{ if(e.target===$('modal')) closeModal();
 // ════════════════════════════════════
 function waAdm(id){
   const os=DATA.find(o=>o['ID']===id); if(!os) return;
-  const ab=os['Status OS']==='ABERTA';
-  let m=`${ab?'🚨':'✅'} *OS ${ab?'ABERTA':'ENCERRADA'}*\n_Prando Transportes_\n`;
-  m+=`━━━━━━━━━━━━━━━━━━━━\n`;
-  m+=`▸ ID: *${os['ID']}*\n▸ Tipo: *${os['Tipo OS']}*\n`;
-  m+=`▸ Motorista: *${os['Motorista']}*\n`;
-  m+=`▸ Frota: *${os['Frota']}* · Placa: *${os['Placa CM']}*\n`;
-  if(os['Placas SRS']) m+=`▸ SRS: ${os['Placas SRS']}\n`;
-  m+=`▸ Abertura: ${os['Data Abertura']} às ${os['Hora Abertura']}\n`;
-  m+=`▸ Descrição:\n_${os['Descricao']}_\n▸ Local:\n${os['Local']}\n`;
-  if(!ab){
-    m+=`\n✅ *Encerrada:* ${os['Data Fechamento']} às ${os['Hora Fechamento']}\n`;
-    m+=`⏱ *Duração:* ${fmtT(Number(os['Tempo Manutencao (min)']))}\n`;
-    if(os['Observacao Fechamento']) m+=`📝 _${os['Observacao Fechamento']}_\n`;
+  const ab   = os['Status OS']==='ABERTA';
+  const tipo = os['Tipo OS'] || 'Socorro';
+  const veic = os['Tipo Veiculo'] || '';
+  const ico  = tipo==='Oficina' ? '🔧' : '🚨';
+  const lbl  = tipo==='Oficina' ? 'OFICINA' : 'SOCORRO – SOS';
+
+  // ── Cabeçalho — idêntico ao formulário ──
+  let m = ico+' *'+lbl+' – ORDEM DE SERVIÇO*\n_JC Prando Transportes_\n';
+  m += '📋 *ID:* `'+os['ID']+'`\n';
+  m += '━━━━━━━━━━━━━━━━━━━━\n\n';
+
+  // ── Identificação ──
+  m += '👤 *IDENTIFICAÇÃO*\n';
+  m += '▸ Motorista: *'+os['Motorista']+'*\n';
+  m += '▸ Tipo: *'+veic+'*\n';
+  if(os['Frota']) m += '▸ Frota: *'+os['Frota']+'*\n';
+  m += '▸ Placa CM: *'+os['Placa CM']+'*\n';
+
+  // SRS — converte "SRS1:ABC-1234 | SRS2:DEF-5678" para linhas separadas
+  if(veic==='Carreta' && os['Placas SRS']){
+    String(os['Placas SRS']).split('|').forEach(function(s){
+      var pts=s.trim().split(':');
+      var n=(pts[0]||'').replace('SRS','').trim();
+      var pl=(pts[1]||'').trim();
+      if(n&&pl) m+='▸ Placa SRS '+n+': *'+pl+'*\n';
+    });
+    if(os['Status Carga'])
+      m+='▸ Status: *'+os['Status Carga']+'* '+(os['Status Carga']==='Carregado'?'📦':'🔲')+'\n';
   }
-  m+=`\n━━━━━━━━━━━━━━━━━━━━\n_Prando Transportes – Florestal_`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(m)}`,'_blank');
+
+  // ── Solicitação ──
+  m += '\n📋 *'+(tipo==='Oficina'?'SERVIÇO':'SOLICITAÇÃO')+'*\n';
+  m += '▸ Data: _'+os['Data Abertura']+'_\n';
+  m += '▸ Horário: *'+os['Hora Abertura']+'*\n';
+  m += '▸ Descrição:\n_'+os['Descricao']+'_\n';
+
+  // ── Local / Oficina ──
+  if(tipo==='Oficina'){
+    m += '\n🔧 *OFICINA*\n'+os['Local']+'\n';
+  } else {
+    m += '\n📍 *LOCALIZAÇÃO*\n'+os['Local']+'\n';
+  }
+
+  // ── Bloco de encerramento (só quando encerrada) ──
+  if(!ab){
+    m += '\n✅ *ENCERRADA*\n';
+    m += '▸ Fechamento: *'+os['Data Fechamento']+'* às *'+os['Hora Fechamento']+'*\n';
+    m += '▸ Duração: *'+fmtT(Number(os['Tempo Manutencao (min)']))+'*\n';
+    if(os['Observacao Fechamento']) m+='▸ Obs: _'+os['Observacao Fechamento']+'_\n';
+  }
+
+  m += '\n━━━━━━━━━━━━━━━━━━━━\n_Prando Transportes – Florestal_';
+  window.open('https://wa.me/?text='+encodeURIComponent(m),'_blank');
 }
 
 // ════════════════════════════════════
