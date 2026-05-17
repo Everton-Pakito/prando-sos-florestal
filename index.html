@@ -132,6 +132,29 @@ textarea{resize:vertical;min-height:90px;line-height:1.5}
 .of-select option { background: var(--bg2); color: var(--text); }
 .of-select.field-err { border-color: #e63946!important; box-shadow: 0 0 0 3px rgba(230,57,70,.25)!important; }
 
+/* ── BLOQUEIO DUPLICIDADE ── */
+#ov-bloqueio{display:none;position:fixed;inset:0;background:rgba(6,11,24,.92);
+  z-index:9000;align-items:center;justify-content:center;padding:20px}
+#ov-bloqueio.show{display:flex}
+.bl-box{width:100%;max-width:380px;background:var(--surface2);
+  border:2px solid var(--red);border-radius:20px;padding:28px 24px;text-align:center}
+.bl-ico{font-size:52px;margin-bottom:12px}
+.bl-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;
+  color:var(--red);margin-bottom:6px}
+.bl-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.bl-info{background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin-bottom:20px;text-align:left}
+.bl-row{display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.bl-row:last-child{border-bottom:none;padding-bottom:0}
+.bl-lbl{color:var(--muted);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.bl-val{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:1px;color:var(--text)}
+.bl-id-val{color:var(--gold)}
+#btn-bl-ok{width:100%;background:var(--red);border:none;border-radius:12px;color:#fff;
+  padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;
+  cursor:pointer;transition:opacity .2s}
+#btn-bl-ok:active{opacity:.8}
+
 /* ── REQUIRED FIELD STATES ── */
 input.field-err,textarea.field-err{
   border-color:#e63946!important;
@@ -301,7 +324,7 @@ footer strong{color:var(--red)}
 <!-- ║  EDITE APENAS ESTA LINHA ABAIXO ║ -->
 <!-- ╚══════════════════════════════════╝ -->
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEiibYzq6CVpHGsTAb6E1bkP8BVA-FF_-DwwztdWmzSr8RjEsA/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxFqJr6jQFlfnTTVqLB3N1M6ZF05KLrEmOIdnwaw3VrcO4CBGcuN1cVAa9jnirElOBuNQ/exec';
 </script>
 
 <!-- INSTALL BANNER -->
@@ -318,7 +341,31 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEii
 <!-- OVERLAY ENVIANDO -->
 <div id="ov-send">
   <div class="spinner"></div>
-  <div class="ov-lbl">Registrando OS...</div>
+  <div class="ov-lbl" id="ov-lbl">Registrando OS...</div>
+</div>
+
+<!-- OVERLAY BLOQUEIO DUPLICIDADE -->
+<div id="ov-bloqueio">
+  <div class="bl-box">
+    <div class="bl-ico">🚫</div>
+    <div class="bl-title">OS Já Aberta!</div>
+    <div class="bl-sub" id="bl-frota">Frota – já possui uma OS aberta para este tipo de veículo.<br>Aguarde o encerramento antes de abrir uma nova.</div>
+    <div class="bl-info">
+      <div class="bl-row">
+        <span class="bl-lbl">OS em aberto</span>
+        <span class="bl-val bl-id-val" id="bl-id">–</span>
+      </div>
+      <div class="bl-row">
+        <span class="bl-lbl">Abertura</span>
+        <span class="bl-val" id="bl-data">–</span>
+      </div>
+      <div class="bl-row">
+        <span class="bl-lbl">Motorista</span>
+        <span class="bl-val" id="bl-motor">–</span>
+      </div>
+    </div>
+    <button id="btn-bl-ok" onclick="fecharBloqueio()">ENTENDIDO</button>
+  </div>
 </div>
 
 <!-- TELA SUCESSO -->
@@ -939,38 +986,73 @@ function montarWA(d, id) {
 async function submeter() {
   const d=coletar();
   if(!validar(d)) return;
-  $('ov-send').classList.add('show');
 
-  // Apps Script exige GET com parâmetros na URL (POST com JSON causa CORS)
+  // Valida URL antes de tentar
+  if(!GAS_URL || GAS_URL.includes('COLE_AQUI')) {
+    toast('⚠ URL do Apps Script não configurada!','er');
+    return;
+  }
+
+  $('ov-send').classList.add('show');
+  $('ov-lbl').textContent = 'Verificando...';
+
+  // ── VERIFICAÇÃO DE DUPLICIDADE ──
+  try{
+    const chkUrl = `${GAS_URL}?action=verificar&frota=${encodeURIComponent(d.frota)}&veiculo=${encodeURIComponent(S.veiculo)}&_t=${Date.now()}`;
+    const chkR   = await fetch(chkUrl, { redirect:'follow' });
+    const chkTxt = await chkR.text();
+    const chk    = JSON.parse(chkTxt);
+
+    if(chk.bloqueado && chk.conflito){
+      $('ov-send').classList.remove('show');
+      const c = chk.conflito;
+      mostrarBloqueio(c, d.frota, S.veiculo);
+      return;
+    }
+  } catch(e){
+    // Se verificação falhar, deixa prosseguir (não bloqueia por erro de rede)
+    console.warn('[SOS] Verificação de duplicidade falhou:', e.message);
+  }
+
+  $('ov-lbl').textContent = 'Registrando OS...';
+
+  // ── ENVIO ──
   const params = new URLSearchParams({
-    action   : 'abrir',
-    veiculo  : S.veiculo,
-    tipoOS   : S.tipoOS,
-    motorista: d.motorista,
-    frota    : d.frota,
-    placaCM  : d.placaCM,
-    srsAtivos: d.srsAtivos,
-    placasSRS: d.placasSRS,
-    statusCarga: S.statusCarga,
-    descricao: d.descricao,
-    local    : d.local,
-    latitude : d.lat || '',
-    longitude: d.lng || '',
-    _t       : Date.now()
+    action      : 'abrir',
+    veiculo     : S.veiculo,
+    tipoOS      : S.tipoOS,
+    motorista   : d.motorista,
+    frota       : d.frota,
+    placaCM     : d.placaCM,
+    srsAtivos   : d.srsAtivos,
+    placasSRS   : d.placasSRS,
+    statusCarga : S.statusCarga,
+    descricao   : d.descricao,
+    local       : d.local,
+    latitude    : d.lat || '',
+    longitude   : d.lng || '',
+    _t          : Date.now()
   });
 
   let osId='';
   try{
-    const r   = await fetch(`${GAS_URL}?${params.toString()}`);
-    const res = await r.json();
-    if(res.ok) osId = res.id;
-    else throw new Error(res.erro || 'Erro no servidor');
+    const url = `${GAS_URL}?${params.toString()}`;
+    console.log('[SOS] Enviando para:', url.substring(0,80)+'...');
+    const r   = await fetch(url, { redirect:'follow' });
+    const txt = await r.text();
+    console.log('[SOS] Resposta:', txt.substring(0,200));
+    let res;
+    try{ res=JSON.parse(txt); }
+    catch(pe){ throw new Error('Resposta inválida: '+txt.substring(0,100)); }
+    if(res.ok) osId=res.id;
+    else throw new Error(res.erro||'Servidor retornou erro');
   }catch(e){
     $('ov-send').classList.remove('show');
     toast('⚠ Falha ao enviar. Verifique a conexão.','er');
-    console.error('Erro submeter:', e);
+    console.error('[SOS] Erro:', e.message);
     return;
   }
+
   S.osId  = osId;
   S.msgWA = montarWA(d, osId);
   $('ov-send').classList.remove('show');
@@ -981,6 +1063,20 @@ async function submeter() {
 function abrirWA() {
   if(!S.msgWA){ const d=coletar(); S.msgWA=montarWA(d,S.osId); }
   window.open(`https://wa.me/?text=${encodeURIComponent(S.msgWA)}`, '_blank');
+}
+
+// ════════════════════════════════════
+//  BLOQUEIO DE DUPLICIDADE
+// ════════════════════════════════════
+function mostrarBloqueio(conflito, frota, veiculo) {
+  $('bl-frota').textContent   = `Frota ${frota} – ${veiculo}`;
+  $('bl-id').textContent      = conflito.id;
+  $('bl-data').textContent    = `${conflito.data} às ${conflito.hora}`;
+  $('bl-motor').textContent   = conflito.motorista || '–';
+  $('ov-bloqueio').classList.add('show');
+}
+function fecharBloqueio() {
+  $('ov-bloqueio').classList.remove('show');
 }
 
 // ════════════════════════════════════
