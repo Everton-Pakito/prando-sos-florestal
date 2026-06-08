@@ -1,61 +1,142 @@
-// SOS Prando – Service Worker v3
-const CACHE = 'sos-prando-v3';
+// ══════════════════════════════════════════════════════
+//  SOS Prando – Service Worker  v2.0
+//  Estratégia: Cache-First para assets, Network-First
+//  para requisições ao Google Apps Script (GAS)
+// ══════════════════════════════════════════════════════
+
+const CACHE_NAME    = 'sos-prando-v2';
+const OFFLINE_PAGE  = '/offline.html';
+
+// Assets que serão cacheados no install
 const PRECACHE = [
+  '/',
   '/index.html',
-  '/adm.html',
   '/manifest.json',
-  '/favicon.ico',
-  '/icons/icon-72.png',
-  '/icons/icon-96.png',
-  '/icons/icon-128.png',
-  '/icons/icon-144.png',
-  '/icons/icon-152.png',
-  '/icons/icon-180.png',
+  '/offline.html',
   '/icons/icon-192.png',
-  '/icons/icon-384.png',
   '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png'
+  '/favicon.ico',
+  // Fonts (cacheadas em runtime via fetch handler)
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(PRECACHE))
+// ── INSTALL ─────────────────────────────────────────
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(PRECACHE))
       .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
+// ── ACTIVATE ────────────────────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(k => k !== CACHE_NAME)
+          .map(k => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-  // Não intercepta chamadas externas (Apps Script, Fonts, Nominatim)
-  if (e.request.method !== 'GET' || url.origin !== location.origin) return;
+// ── FETCH ────────────────────────────────────────────
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
 
-  if (e.request.mode === 'navigate') {
-    // Navegação: tenta rede primeiro, fallback no cache
-    e.respondWith(
-      fetch(e.request)
-        .then(r => { const c=r.clone(); caches.open(CACHE).then(ca=>ca.put(e.request,c)); return r; })
-        .catch(() => caches.match('/index.html'))
+  // 1. Requisições ao GAS → sempre Network, sem cache
+  if (url.hostname.includes('script.google.com') || url.hostname.includes('googleapis.com')) {
+    event.respondWith(
+      fetch(request).catch(() =>
+        new Response(JSON.stringify({ ok: false, erro: 'Sem conexão' }), {
+          headers: { 'Content-Type': 'application/json' }
+        })
+      )
     );
     return;
   }
 
-  // Assets: cache primeiro
-  e.respondWith(
-    caches.match(e.request).then(cached => {
+  // 2. Navegação (HTML) → Network-First, fallback offline.html
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(request, copy));
+          return res;
+        })
+        .catch(() =>
+          caches.match(request).then(cached =>
+            cached || caches.match(OFFLINE_PAGE)
+          )
+        )
+    );
+    return;
+  }
+
+  // 3. Fontes Google → Cache-First (evita re-download)
+  if (url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
+    event.respondWith(
+      caches.match(request).then(cached => {
+        if (cached) return cached;
+        return fetch(request).then(res => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(request, copy));
+          return res;
+        });
+      })
+    );
+    return;
+  }
+
+  // 4. Outros assets (js, css, png, etc.) → Cache-First
+  event.respondWith(
+    caches.match(request).then(cached => {
       if (cached) return cached;
-      return fetch(e.request).then(r => {
-        if (r.status === 200) { const c=r.clone(); caches.open(CACHE).then(ca=>ca.put(e.request,c)); }
-        return r;
+      return fetch(request).then(res => {
+        if (!res || res.status !== 200 || res.type === 'opaque') return res;
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(request, copy));
+        return res;
       });
     })
+  );
+});
+
+// ── BACKGROUND SYNC (para envio offline) ─────────────
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-os') {
+    event.waitUntil(syncPendingOS());
+  }
+});
+
+async function syncPendingOS() {
+  // Implementar se quiser fila offline
+  // Por ora apenas notifica clientes
+  const clients = await self.clients.matchAll();
+  clients.forEach(c => c.postMessage({ type: 'SYNC_COMPLETE' }));
+}
+
+// ── PUSH NOTIFICATIONS (preparado para TWA) ──────────
+self.addEventListener('push', event => {
+  if (!event.data) return;
+  const data = event.data.json();
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'SOS Prando', {
+      body: data.body || '',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-96.png',
+      vibrate: [200, 100, 200],
+      data: data
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.openWindow('/')
   );
 });

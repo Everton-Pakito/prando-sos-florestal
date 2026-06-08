@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#e63946">
+<title>SOS Prando – Offline</title>
+<style>
+  :root{--red:#e63946;--bg:#060b18;--text:#eef2ff;--muted:#7a8aaa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:100dvh;padding:24px;text-align:center;gap:20px}
+  .ico{font-size:72px}
+  h1{font-size:28px;letter-spacing:2px;color:var(--red)}
+  p{color:var(--muted);font-size:15px;max-width:280px;line-height:1.6}
+  button{background:var(--red);border:none;border-radius:12px;color:#fff;
+    padding:14px 28px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:1px;
+    margin-top:10px}
+  button:active{opacity:.8}
+</style>
+</head>
+<body>
+  <div class="ico">📡</div>
+  <h1>SEM CONEXÃO</h1>
+  <p>Você está offline. Verifique sua conexão de internet e tente novamente.</p>
+  <button onclick="location.reload()">TENTAR NOVAMENTE</button>
+</body>
+</html>
