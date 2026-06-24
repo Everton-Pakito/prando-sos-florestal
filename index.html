@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#e63946">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="SOS Prando">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SOS Prando">
@@ -1129,7 +1129,7 @@ function resetForm() {
 let _prompt=null;
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js',{scope:'./'})
+    navigator.serviceWorker.register('./sw.js',{scope:'./'})
       .then(r=>setInterval(()=>r.update(),60000)).catch(()=>{});
   });
 }

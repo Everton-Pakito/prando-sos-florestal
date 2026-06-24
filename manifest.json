@@ -1,11 +1,11 @@
 {
-  "id": "./",
+  "id": "/prando-sos-florestal/",
   "name": "SOS Prando Florestal",
   "short_name": "SOS Prando",
   "description": "Aplicativo PWA para abertura e gestão de OS/SOS da operação florestal.",
   "lang": "pt-BR",
   "dir": "ltr",
-  "start_url": "https://everton-pakito.github.io/prando-sos-florestal/",
+  "start_url": "/prando-sos-florestal/index.html",
   "scope": "/prando-sos-florestal/",
   "display": "standalone",
   "display_override": [
@@ -94,7 +94,7 @@
       "name": "Abrir OS/SOS",
       "short_name": "OS/SOS",
       "description": "Abrir nova solicitação",
-      "url": "./index.html",
+      "url": "/prando-sos-florestal/index.html",
       "icons": [
         {
           "src": "icons/icon-192.png",
@@ -106,7 +106,7 @@
       "name": "Painel ADM",
       "short_name": "ADM",
       "description": "Acessar painel administrativo",
-      "url": "./adm.html",
+      "url": "/prando-sos-florestal/adm.html",
       "icons": [
         {
           "src": "icons/icon-192.png",

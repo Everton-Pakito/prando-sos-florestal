@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="theme-color" content="#0d1526">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ADM Prando">
@@ -550,7 +550,7 @@ if(sessionStorage.getItem('adm')==='1') load();
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
+    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
   });
 }
 </script>

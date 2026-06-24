@@ -1,5 +1,5 @@
 // SOS Prando Florestal, Service Worker PWA PRO
-const CACHE_NAME = 'sos-prando-pwa-v3';
+const CACHE_NAME = 'sos-prando-pwa-v4';
 const BASE = new URL('./', self.registration.scope);
 const APP_SHELL = [
   './',
