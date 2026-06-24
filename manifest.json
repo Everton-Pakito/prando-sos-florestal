@@ -5,7 +5,7 @@
   "description": "Aplicativo PWA para abertura e gestão de OS/SOS da operação florestal.",
   "lang": "pt-BR",
   "dir": "ltr",
-  "start_url": "/prando-sos-florestal/index.html",
+  "start_url": "https://everton-pakito.github.io/prando-sos-florestal/index.html",
   "scope": "/prando-sos-florestal/",
   "display": "standalone",
   "display_override": [
