@@ -1,86 +1,15 @@
 {
-  "background_color": "#e63946",
-  "description": "Formulário de Ordem de Serviço – Prando Transportes Florestal",
+  "background_color": "#ffffff",
   "dir": "ltr",
   "display": "standalone",
-  "name": "SOS Prando",
+  "name": "everton-pakito.github",
   "orientation": "any",
   "scope": "/",
-  "short_name": "SOS Prando",
-  "start_url": "/",
-  "theme_color": "#e63946",
-  "icons": [
-    {
-      "src": "https://everton-pakito.github.io/favicon.ico",
-      "type": "image/x-icon",
-      "isSquare": false,
-      "isPng": false,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 0,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
-    },
-    {
-      "src": "https://everton-pakito.github.io/icons/icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "isSquare": true,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 192,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": true
-    },
-    {
-      "src": "https://everton-pakito.github.io/icons/apple-touch-icon.png",
-      "isSquare": false,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 0,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
-    },
-    {
-      "src": "https://everton-pakito.github.io/icons/icon-152.png",
-      "sizes": "152x152",
-      "isSquare": true,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 152,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
-    },
-    {
-      "src": "https://everton-pakito.github.io/icons/icon-180.png",
-      "sizes": "180x180",
-      "isSquare": true,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 180,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
-    },
-    {
-      "src": "https://everton-pakito.github.io/icons/icon-144.png",
-      "isSquare": false,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 0,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
-    }
-  ],
-  "id": "everton pakito"
+  "short_name": "everton-pakito.github",
+  "start_url": "https://everton-pakito.github.io/sos-prando-florestal/",
+  "theme_color": "#ffffff",
+  "display_override": [
+    "fullscreen",
+    "window-controls-overlay"
+  ]
 }
