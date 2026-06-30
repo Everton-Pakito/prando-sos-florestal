@@ -154,11 +154,15 @@ main{flex:1;padding:8px 12px 24px;display:flex;flex-direction:column;gap:10px;ov
 .btn-wa-adm{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
   color:var(--green);padding:12px 16px;cursor:pointer;font-size:20px;transition:all .2s;flex-shrink:0}
 .btn-wa-adm:active{background:rgba(37,211,102,.1)}
+.btn-edit{flex:1;background:var(--blue);border:none;border-radius:10px;color:#fff;
+  padding:12px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;
+  cursor:pointer;transition:opacity .2s;min-width:120px}
+.btn-edit:active{opacity:.7}
 
 /* ── MODAL ── */
-#modal{display:none;position:fixed;inset:0;background:rgba(6,11,24,.85);
+#modal,#modal-edit{display:none;position:fixed;inset:0;background:rgba(6,11,24,.85);
   z-index:500;align-items:center;justify-content:center;padding:20px}
-#modal.show{display:flex}
+#modal.show,#modal-edit.show{display:flex}
 .mb{width:100%;max-width:400px;background:var(--surface2);border:1px solid var(--border-act);
   border-radius:18px;padding:24px}
 .mb-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--green);margin-bottom:4px}
@@ -176,6 +180,19 @@ main{flex:1;padding:8px 12px 24px;display:flex;flex-direction:column;gap:10px;ov
 #btn-cx-enc{background:var(--surface);border:1px solid var(--border);border-radius:10px;
   color:var(--muted);padding:13px 18px;font-family:'Bebas Neue',sans-serif;
   font-size:18px;letter-spacing:2px;cursor:pointer}
+
+/* ── MODAL EDITAR ── */
+.mb-edit{max-width:480px;max-height:88vh;overflow-y:auto}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.mb-field.full{grid-column:1/-1}
+.mb-field input,.mb-field select{width:100%;background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;
+  padding:10px;outline:none;transition:border-color .2s}
+.mb-field input:focus,.mb-field select:focus{border-color:var(--border-act)}
+.mb-field select{appearance:none;-webkit-appearance:none}
+#btn-ok-edit{flex:1;background:var(--blue);border:none;border-radius:10px;color:#fff;
+  padding:13px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer}
+#btn-ok-edit:active{opacity:.8}
 
 /* ── TOAST ── */
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);
@@ -197,7 +214,7 @@ main{flex:1;padding:8px 12px 24px;display:flex;flex-direction:column;gap:10px;ov
 <!-- ║  EDITE APENAS ESTAS DUAS LINHAS     ║ -->
 <!-- ╚══════════════════════════════════════╝ -->
 <script>
-const GAS_URL   = 'https://script.google.com/macros/s/AKfycbzKXo13OT5D27i5ajd_iEiibYzq6CVpHGsTAb6E1bkP8BVA-FF_-DwwztdWmzSr8RjEsA/exec';
+const GAS_URL   = 'https://script.google.com/macros/s/AKfycbwmKxe-AOiiThUm9b_yxBjr7VsRC3Ekq_vtkChzGMtW07YhAqQ5ULLYJq-h0N8LFFxdKA/exec';
 const ADM_SENHA = 'Prando2026'; // ← MUDE PARA SUA SENHA
 </script>
 
@@ -274,6 +291,42 @@ const ADM_SENHA = 'Prando2026'; // ← MUDE PARA SUA SENHA
   </div>
 </div>
 
+<!-- MODAL EDITAR -->
+<div id="modal-edit">
+  <div class="mb mb-edit">
+    <div class="mb-title" style="color:var(--blue)">✏️ Editar OS</div>
+    <div class="mb-sub" id="me-sub">–</div>
+    <div class="edit-grid">
+      <div class="mb-field"><label>Motorista</label><input type="text" id="ed-motorista"></div>
+      <div class="mb-field">
+        <label>Tipo OS</label>
+        <select id="ed-tipoos">
+          <option value="Socorro">Socorro</option>
+          <option value="Oficina">Oficina</option>
+        </select>
+      </div>
+      <div class="mb-field"><label>Tipo Veículo</label><input type="text" id="ed-tipoveiculo"></div>
+      <div class="mb-field"><label>Frota</label><input type="text" id="ed-frota"></div>
+      <div class="mb-field"><label>Placa CM</label><input type="text" id="ed-placacm"></div>
+      <div class="mb-field">
+        <label>Status Carga</label>
+        <select id="ed-statuscarga">
+          <option value="">–</option>
+          <option value="Carregado">Carregado</option>
+          <option value="Vazio">Vazio</option>
+        </select>
+      </div>
+      <div class="mb-field full"><label>Placas SRS</label><input type="text" id="ed-placassrs" placeholder="Ex: SRS1:ABC-1234 | SRS2:DEF-5678"></div>
+      <div class="mb-field full"><label>Descrição</label><textarea id="ed-descricao"></textarea></div>
+      <div class="mb-field full"><label>Local</label><input type="text" id="ed-local"></div>
+    </div>
+    <div class="mb-btns">
+      <button id="btn-cx-edit" onclick="closeModalEdit()">CANCELAR</button>
+      <button id="btn-ok-edit" onclick="confirmarEdicao()">SALVAR</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -295,6 +348,27 @@ function fmtT(min){
   if(min<60) return `${min}min`;
   const h=Math.floor(min/60),m=min%60;
   return m?`${h}h ${m}min`:`${h}h`;
+}
+function pad2(n){ return String(n).padStart(2,'0'); }
+// Converte qualquer valor de data (ISO, Date, etc.) para DD/MM/AA
+function fmtData(v){
+  if(!v) return '–';
+  if(typeof v==='string' && /^\d{2}\/\d{2}\/\d{2,4}$/.test(v.trim())){
+    const p=v.trim().split('/'); return `${p[0]}/${p[1]}/${p[2].slice(-2)}`;
+  }
+  const d=new Date(v);
+  if(isNaN(d)) return String(v);
+  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${String(d.getFullYear()).slice(-2)}`;
+}
+// Converte qualquer valor de hora (ISO, Date, etc.) para HH:MM:SS
+function fmtHora(v){
+  if(!v) return '–';
+  if(typeof v==='string' && /^\d{2}:\d{2}(:\d{2})?$/.test(v.trim())){
+    const p=v.trim().split(':'); return `${p[0]}:${p[1]}:${p[2]||'00'}`;
+  }
+  const d=new Date(v);
+  if(isNaN(d)) return String(v);
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
 }
 
 // ════════════════════════════════════
@@ -410,7 +484,7 @@ function card(os){
   <div class="osc-head" onclick="toggle('${id}')">
     <div class="osc-ico ${tipo==='Oficina'?'of':'sc'}">${ico}</div>
     <div class="osc-inf">
-      <div class="osc-id">${esc(id)} · ${esc(os['Data Abertura']||'')} ${esc(os['Hora Abertura']||'')}</div>
+      <div class="osc-id">${esc(id)} · ${esc(fmtData(os['Data Abertura']))} ${esc(fmtHora(os['Hora Abertura']))}</div>
       <div class="osc-mot">${esc(os['Motorista']||'–')}</div>
       <div class="osc-sub">Frota ${esc(os['Frota']||'–')} · ${esc(os['Placa CM']||'–')} · ${esc(tipo)}${esc(carLn)}${srsLn}</div>
     </div>
@@ -429,7 +503,7 @@ function card(os){
       ${os['Placas SRS']?`<div class="dc full"><div class="dc-l">Placas SRS</div><div class="dc-v">${esc(os['Placas SRS'])}</div></div>`:''}
       ${os['Status Carga']?`<div class="dc"><div class="dc-l">Status Carga</div><div class="dc-v">${esc(os['Status Carga'])}</div></div>`:''}
       ${!ab?`
-      <div class="dc"><div class="dc-l">Fechamento</div><div class="dc-v">${esc(os['Data Fechamento']||'–')} ${esc(os['Hora Fechamento']||'')}</div></div>
+      <div class="dc"><div class="dc-l">Fechamento</div><div class="dc-v">${esc(fmtData(os['Data Fechamento']))} ${esc(fmtHora(os['Hora Fechamento']))}</div></div>
       <div class="dc"><div class="dc-l">Duração</div><div class="dc-v">${fmtT(Number(os['Tempo Manutencao (min)']))}</div></div>
       ${os['Observacao Fechamento']?`<div class="dc full"><div class="dc-l">Obs. Fechamento</div><div class="dc-v">${esc(os['Observacao Fechamento'])}</div></div>`:''}
       `:''}
@@ -438,6 +512,7 @@ function card(os){
     <div class="osc-loc">📍 ${esc(os['Local']||'–')}</div>
     <div class="osc-acts">
       ${ab?`<button class="btn-enc" onclick="openModal('${id}')">✅ ENCERRAR OS</button>`:''}
+      <button class="btn-edit" onclick="abrirEdicao('${id}')">✏️ Editar</button>
       <button class="btn-wa-adm" onclick="waAdm('${id}')" title="Enviar WhatsApp">📲</button>
     </div>
   </div>
@@ -482,6 +557,61 @@ async function confirmar(){
 $('modal').addEventListener('click',e=>{ if(e.target===$('modal')) closeModal(); });
 
 // ════════════════════════════════════
+//  MODAL EDITAR
+// ════════════════════════════════════
+let edit_id=null;
+
+function abrirEdicao(id){
+  const os=DATA.find(o=>o['ID']===id);
+  if(!os){ toast('⚠ OS não encontrada','er'); return; }
+  edit_id=id;
+  $('me-sub').textContent=id;
+  $('ed-motorista').value   = os['Motorista']||'';
+  $('ed-tipoos').value      = os['Tipo OS']||'Socorro';
+  $('ed-tipoveiculo').value = os['Tipo Veiculo']||'';
+  $('ed-frota').value       = os['Frota']||'';
+  $('ed-placacm').value     = os['Placa CM']||'';
+  $('ed-statuscarga').value = os['Status Carga']||'';
+  $('ed-placassrs').value   = os['Placas SRS']||'';
+  $('ed-descricao').value   = os['Descricao']||'';
+  $('ed-local').value       = os['Local']||'';
+  $('modal-edit').classList.add('show');
+}
+function closeModalEdit(){ $('modal-edit').classList.remove('show'); edit_id=null; }
+
+async function confirmarEdicao(){
+  if(!edit_id) return;
+  const btn=$('btn-ok-edit');
+  btn.textContent='...'; btn.disabled=true;
+  const params=new URLSearchParams({
+    action:'editar',
+    id:edit_id,
+    motorista:$('ed-motorista').value.trim(),
+    tipoOS:$('ed-tipoos').value,
+    tipoVeiculo:$('ed-tipoveiculo').value.trim(),
+    frota:$('ed-frota').value.trim(),
+    placaCM:$('ed-placacm').value.trim(),
+    statusCarga:$('ed-statuscarga').value,
+    placasSRS:$('ed-placassrs').value.trim(),
+    descricao:$('ed-descricao').value.trim(),
+    local:$('ed-local').value.trim(),
+    _:Date.now()
+  });
+  try{
+    const r=await fetch(`${GAS_URL}?${params.toString()}`);
+    const d=await r.json();
+    if(d.ok){
+      toast('✓ OS atualizada com sucesso!','ok');
+      closeModalEdit();
+      await load();
+    }else toast('⚠ '+(d.erro||'Erro ao editar'),'er');
+  }catch{ toast('⚠ Falha de conexão','er'); }
+  btn.textContent='SALVAR'; btn.disabled=false;
+}
+
+$('modal-edit').addEventListener('click',e=>{ if(e.target===$('modal-edit')) closeModalEdit(); });
+
+// ════════════════════════════════════
 //  WA DO PAINEL
 // ════════════════════════════════════
 function waAdm(id){
@@ -518,8 +648,8 @@ function waAdm(id){
 
   // ── Solicitação ──
   m += '\n📋 *'+(tipo==='Oficina'?'SERVIÇO':'SOLICITAÇÃO')+'*\n';
-  m += '▸ Data: _'+os['Data Abertura']+'_\n';
-  m += '▸ Horário: *'+os['Hora Abertura']+'*\n';
+  m += '▸ Data: _'+fmtData(os['Data Abertura'])+'_\n';
+  m += '▸ Horário: *'+fmtHora(os['Hora Abertura'])+'*\n';
   m += '▸ Descrição:\n_'+os['Descricao']+'_\n';
 
   // ── Local / Oficina ──
@@ -532,7 +662,7 @@ function waAdm(id){
   // ── Bloco de encerramento (só quando encerrada) ──
   if(!ab){
     m += '\n✅ *ENCERRADA*\n';
-    m += '▸ Fechamento: *'+os['Data Fechamento']+'* às *'+os['Hora Fechamento']+'*\n';
+    m += '▸ Fechamento: *'+fmtData(os['Data Fechamento'])+'* às *'+fmtHora(os['Hora Fechamento'])+'*\n';
     m += '▸ Duração: *'+fmtT(Number(os['Tempo Manutencao (min)']))+'*\n';
     if(os['Observacao Fechamento']) m+='▸ Obs: _'+os['Observacao Fechamento']+'_\n';
   }
